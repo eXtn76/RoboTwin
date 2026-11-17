@@ -1,0 +1,17 @@
+# Python-Bytecode (wird beim Import automatisch erzeugt)
+__pycache__/
+*.py[cod]
+
+# Virtuelle Umgebungen
+.venv/
+venv/
+
+# Caches von Test- und Analyse-Tools
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Paket-Builds
+*.egg-info/
+dist/
+build/
