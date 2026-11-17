@@ -1,5 +1,8 @@
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 using RoboTwin.Model;
 using Unity.Robotics.UrdfImporter;
 using Unity.Robotics.UrdfImporter.Control;
@@ -11,6 +14,7 @@ namespace RoboTwin.EditorTools
     /// <summary>
     /// Wandelt einen vom URDF Importer erzeugten Roboter (ArticulationBody-Physik)
     /// in Transform-Kinematik um: Physik-Komponenten raus, JointDriver an jedes Drehgelenk.
+    /// Grenzen und Geschwindigkeiten kommen direkt aus der URDF-Datei.
     /// Aufruf: Roboter-Wurzel in der Hierarchy auswählen, Menü RoboTwin.
     /// </summary>
     public static class TransformKinematicsConverter
@@ -40,19 +44,24 @@ namespace RoboTwin.EditorTools
                 return;
             }
 
-            // 1. Gelenkdaten sichern, solange die Importer-Komponenten noch existieren.
-            //    Der Importer speichert die URDF-Grenzen im xDrive des ArticulationBody (in Grad)
-            //    und die Maximalgeschwindigkeit in maxAngularVelocity (in rad/s).
+            // 1. URDF-Datei finden und die Drehgelenke daraus lesen.
+            //    (Nicht aus dem ArticulationBody: maxAngularVelocity wird dort nicht
+            //    in der Szene gespeichert und steht nach dem Neuladen auf 50 rad/s.)
+            string urdfPath = FindUrdf(robot.name);
+            if (urdfPath == null)
+                urdfPath = EditorUtility.OpenFilePanel("URDF-Datei wählen", "Assets", "urdf");
+            if (string.IsNullOrEmpty(urdfPath))
+                return;
+
+            Dictionary<string, (float min, float max, float maxSpeed)> urdfJoints = ReadRevoluteJoints(urdfPath);
+
+            // GameObjects den URDF-Gelenken zuordnen, solange die Importer-Komponenten
+            // (mit jointName) noch existieren.
             var revoluteJoints = new List<(GameObject link, string name, float min, float max, float maxSpeed)>();
             foreach (UrdfJoint joint in robot.GetComponentsInChildren<UrdfJoint>(true))
             {
-                if (joint.JointType != UrdfJoint.JointTypes.Revolute)
-                    continue;
-
-                ArticulationBody body = joint.GetComponent<ArticulationBody>();
-                revoluteJoints.Add((joint.gameObject, joint.jointName,
-                    body.xDrive.lowerLimit, body.xDrive.upperLimit,
-                    body.maxAngularVelocity * Mathf.Rad2Deg));
+                if (urdfJoints.TryGetValue(joint.jointName, out var data))
+                    revoluteJoints.Add((joint.gameObject, joint.jointName, data.min, data.max, data.maxSpeed));
             }
 
             // Alle folgenden Änderungen bilden einen einzigen Undo-Schritt (Strg+Z).
@@ -88,6 +97,49 @@ namespace RoboTwin.EditorTools
 
             Undo.CollapseUndoOperations(undoGroup);
             Debug.Log($"RoboTwin: {revoluteJoints.Count} Drehgelenke auf Transform-Kinematik umgestellt.");
+        }
+
+        // Sucht im Projekt "<robotName>.urdf" (der Importer benennt die Wurzel nach dem Roboter).
+        static string FindUrdf(string robotName)
+        {
+            foreach (string guid in AssetDatabase.FindAssets(robotName))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (Path.GetFileName(path) == robotName + ".urdf")
+                    return path;
+            }
+            return null;
+        }
+
+        // Liest alle <joint type="revolute"> mit ihren <limit>-Werten, umgerechnet in Grad.
+        static Dictionary<string, (float min, float max, float maxSpeed)> ReadRevoluteJoints(string urdfPath)
+        {
+            var result = new Dictionary<string, (float, float, float)>();
+            XDocument doc = XDocument.Load(urdfPath);
+
+            foreach (XElement joint in doc.Root.Elements("joint"))
+            {
+                if ((string)joint.Attribute("type") != "revolute")
+                    continue;
+
+                XElement limit = joint.Element("limit");
+                if (limit == null)
+                    continue;
+
+                result[(string)joint.Attribute("name")] = (
+                    RadiansToDegrees(limit, "lower"),
+                    RadiansToDegrees(limit, "upper"),
+                    RadiansToDegrees(limit, "velocity"));
+            }
+            return result;
+        }
+
+        // InvariantCulture: Die URDF schreibt "3.14" mit Punkt. Auf einem deutschen
+        // Windows würde double.Parse ohne sie ein Komma erwarten und falsch lesen.
+        static float RadiansToDegrees(XElement element, string attribute)
+        {
+            double radians = double.Parse((string)element.Attribute(attribute), CultureInfo.InvariantCulture);
+            return (float)(radians * Mathf.Rad2Deg);
         }
 
         static void DestroyAll<T>(GameObject go) where T : Component
