@@ -5,7 +5,9 @@ austauschbare Netzwerkschicht durch einen simulierten Robotercontroller in Pytho
 
 ## Zweck
 
-<!-- TODO (Yannick): 2–3 Sätze in eigenen Worten: Was ist RoboTwin, für wen, warum? -->
+RoboTwin ist ein digitaler Zwilling eines 6-Achs-Industrieroboters in Unity. Der Arm lässt sich über eine Bedienoberfläche achsweise oder über Zielkoordinaten steuern und Bewegungsprogramme abfahren. Über eine austauschbare Netzwerkschicht spricht die Simulation per TCP mit einem Robotercontroller in Python und zeigt dabei immer den gemeldeten Ist-Zustand an.
+
+Das Projekt zeigt, wie sich Game-Engine-Technologie für Robotik und Automatisierung einsetzen lässt: zum Testen von Abläufen ohne echte Hardware, für Schulungen und als Grundlage, um später einen realen Roboter anzubinden.
 
 ## Repo-Struktur
 
