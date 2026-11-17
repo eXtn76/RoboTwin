@@ -23,6 +23,7 @@ namespace RoboTwin.Connection
         int nextCommandId = 1;
         float commandSpeed = 1f;        // Geschwindigkeit des laufenden Befehls (0..1)
         float overridePercent = 100f;   // globaler Override (1..100)
+        string emergencyStopReason;     // gesetzt, solange der Not-Halt aktiv ist
         double time;                    // "Uhr des Controllers" in Sekunden
 
         public SimulatedConnection(float[] minAngles, float[] maxAngles,
@@ -85,8 +86,10 @@ namespace RoboTwin.Connection
             for (int i = 0; i < joints.Length; i++)
                 joints[i] = simulator.GetCurrent(i);
 
-            RobotStatus robotStatus = simulator.IsMoving ? RobotStatus.Moving : RobotStatus.Idle;
-            StateReceived?.Invoke(new RobotState(joints, robotStatus, overridePercent, time));
+            RobotStatus robotStatus = emergencyStopReason != null ? RobotStatus.Error
+                : simulator.IsMoving ? RobotStatus.Moving
+                : RobotStatus.Idle;
+            StateReceived?.Invoke(new RobotState(joints, robotStatus, overridePercent, time, emergencyStopReason));
         }
 
         // ---- Befehle prüfen und ausführen ----
@@ -108,6 +111,15 @@ namespace RoboTwin.Connection
                 case SetOverrideCommand setOverride:
                     return ExecuteSetOverride(setOverride);
 
+                case EmergencyStopCommand _:
+                    simulator.Stop();   // Stopp-Kategorie 0: sofort stehen
+                    emergencyStopReason ??= "Not-Halt in Unity ausgelöst";
+                    return CommandResult.Ack(command.Id);
+
+                case ResetCommand _:
+                    emergencyStopReason = null;
+                    return CommandResult.Ack(command.Id);
+
                 default:
                     return CommandResult.Error(command.Id, "unknown_command",
                         $"Unbekannter Befehl {command.GetType().Name}.");
@@ -117,6 +129,9 @@ namespace RoboTwin.Connection
         // Ablehnen statt still begrenzen: Der Roboter fährt entweder genau wie befohlen – oder gar nicht.
         CommandResult ExecuteMoveJoints(MoveJointsCommand move)
         {
+            if (emergencyStopReason != null)
+                return CommandResult.Error(move.Id, "emergency_stop_active", "Not-Halt aktiv – erst quittieren (reset).");
+
             float[] joints = move.Joints;
             if (joints == null || joints.Length != minAngles.Length)
                 return CommandResult.Error(move.Id, "invalid_command",

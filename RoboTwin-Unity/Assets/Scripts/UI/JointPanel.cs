@@ -4,6 +4,7 @@ using RoboTwin.Connection;
 using RoboTwin.Kinematics;
 using RoboTwin.Model;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
 namespace RoboTwin.UI
@@ -12,7 +13,8 @@ namespace RoboTwin.UI
     /// Bedienpanel für den Joint-Modus: ein Slider pro Gelenk (Soll), Anzeige der Istwerte
     /// und der TCP-Position, Override, Stop und Home.
     /// Sendet Befehle über IRobotConnection, liest Istwerte vom Modell.
-    /// Darf Unity nicht steuern (getrennt oder Beobachter), folgen die Slider nur dem Ist-Zustand.
+    /// Darf Unity nicht fahren (getrennt, Beobachter, Not-Halt), folgen die Slider nur dem Ist-Zustand.
+    /// Not-Halt per Button oder Escape-Taste.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public class JointPanel : MonoBehaviour
@@ -27,6 +29,8 @@ namespace RoboTwin.UI
         SliderInt overrideSlider;
         Button stopButton;
         Button homeButton;
+        Button emergencyStopButton;
+        Button resetButton;
         Label tcpLabel;
         Label statusLabel;
 
@@ -56,6 +60,10 @@ namespace RoboTwin.UI
             homeButton = root.Q<Button>("home-button");
             stopButton.clicked += OnStopClicked;
             homeButton.clicked += OnHomeClicked;
+            emergencyStopButton = root.Q<Button>("emergency-stop-button");
+            resetButton = root.Q<Button>("reset-button");
+            emergencyStopButton.clicked += OnEmergencyStopClicked;
+            resetButton.clicked += OnResetClicked;
             tcpLabel = root.Q<Label>("tcp-label");
             statusLabel = root.Q<Label>("status-label");
 
@@ -77,6 +85,14 @@ namespace RoboTwin.UI
                 host.ControlChanged -= UpdateControls;
                 host.ConnectionSwitched -= OnConnectionSwitched;
             }
+        }
+
+        // Not-Halt auch per Tastatur (Escape) – am echten Pendant ist er ein Taster, kein Menüpunkt.
+        void Update()
+        {
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
+                OnEmergencyStopClicked();
         }
 
         // Erzeugt pro Gelenk eine Zeile aus der Vorlage JointRow.uxml.
@@ -131,16 +147,17 @@ namespace RoboTwin.UI
             statusLabel.text = model.Status switch
             {
                 RobotStatus.Moving => "Status: fährt",
-                RobotStatus.Error => "Status: Fehler",
+                RobotStatus.Error => $"NOT-HALT: {model.ErrorMessage}",
                 _ => "Status: steht"
             };
+            statusLabel.EnableInClassList("message--error", model.Status == RobotStatus.Error);
 
             // Slider auf den Ist-Zustand setzen, wenn:
-            // - wir nicht steuern (Beobachter): Die Slider spiegeln, was ein anderer Client befiehlt,
+            // - wir nicht fahren dürfen (Beobachter, Not-Halt): Die Slider spiegeln den Ist-Zustand,
             // - gerade umgeschaltet wurde: der neue Controller steht evtl. ganz woanders,
             // - eine Bewegung gerade zu Ende ist (Slider, Home, Stop oder kartesischer Modus).
             bool motionFinished = wasMoving && !model.IsMoving;
-            if (!host.CanControl || resyncOnNextState || motionFinished)
+            if (!host.CanMove || resyncOnNextState || motionFinished)
             {
                 SyncTargetsToActual();
                 overrideSlider.SetValueWithoutNotify(Mathf.RoundToInt(model.OverridePercent));
@@ -151,15 +168,21 @@ namespace RoboTwin.UI
 
         void OnConnectionSwitched() => resyncOnNextState = true;
 
-        // Bedienbarkeit an Verbindung und Rolle anpassen.
+        // Bedienbarkeit an Verbindung, Rolle und Not-Halt anpassen.
         void UpdateControls()
         {
-            bool canControl = host.CanControl;
+            bool canMove = host.CanMove;
             foreach (Slider slider in targetSliders)
-                slider.SetEnabled(canControl);
-            overrideSlider.SetEnabled(canControl);
-            homeButton.SetEnabled(canControl);
-            stopButton.SetEnabled(host.IsConnected);   // anhalten darf auch ein Beobachter
+                slider.SetEnabled(canMove);
+            homeButton.SetEnabled(canMove);
+            overrideSlider.SetEnabled(host.CanControl);   // Override ist auch im Not-Halt erlaubt
+
+            // Anhalten darf jeder Verbundene, auch ein Beobachter.
+            stopButton.SetEnabled(host.IsConnected);
+            emergencyStopButton.SetEnabled(host.IsConnected);
+
+            // Quittieren nur als Besitzer und nur, wenn es etwas zu quittieren gibt.
+            resetButton.SetEnabled(host.CanControl && model.Status == RobotStatus.Error);
         }
 
         void OnStopClicked()
@@ -167,6 +190,14 @@ namespace RoboTwin.UI
             Connection.SendCommand(new StopCommand());
             SyncTargetsToActual();
         }
+
+        void OnEmergencyStopClicked()
+        {
+            Connection.SendCommand(new EmergencyStopCommand());
+            SyncTargetsToActual();
+        }
+
+        void OnResetClicked() => Connection.SendCommand(new ResetCommand());
 
         void OnHomeClicked()
         {

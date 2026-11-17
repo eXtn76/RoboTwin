@@ -47,7 +47,7 @@ def main(argv: list[str] | None = None) -> int:
 
     server = RobotServer(robot, args.host, args.port, args.rate)
     try:
-        asyncio.run(server.run())
+        asyncio.run(server.run(console=True))
     except KeyboardInterrupt:
         log.info("Beendet (Strg+C).")
     except OSError as error:

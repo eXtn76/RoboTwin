@@ -29,6 +29,7 @@ namespace RoboTwin.Model
         public RobotStatus Status { get; private set; } = RobotStatus.Idle;
         public float OverridePercent { get; private set; } = 100f;
         public double Timestamp { get; private set; }
+        public string ErrorMessage { get; private set; }   // Grund des Fehlerzustands, sonst null
         public bool IsMoving => Status == RobotStatus.Moving;
 
         // Beim Hinzufügen im Editor: alle JointDriver darunter einsammeln.
@@ -64,6 +65,7 @@ namespace RoboTwin.Model
             Status = state.Status;
             OverridePercent = state.OverridePercent;
             Timestamp = state.Timestamp;
+            ErrorMessage = state.ErrorMessage;
 
             // Erst nach der Schleife: Abonnenten sehen nie einen halb aktualisierten Zustand.
             StateChanged?.Invoke();

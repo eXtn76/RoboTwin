@@ -37,7 +37,17 @@ class SetOverride:
     percent: float
 
 
-Command = Union[MoveJoints, Stop, SetOverride]
+@dataclass(frozen=True)
+class EmergencyStop:
+    id: int
+
+
+@dataclass(frozen=True)
+class Reset:
+    id: int
+
+
+Command = Union[MoveJoints, Stop, SetOverride, EmergencyStop, Reset]
 
 
 class ProtocolError(Exception):
@@ -92,6 +102,12 @@ def parse_command(line: Union[str, bytes]) -> Command:
         if not _is_number(percent):
             raise ProtocolError("invalid_command", "Feld 'percent' fehlt oder ist keine Zahl.", command_id)
         return SetOverride(command_id, float(percent))
+
+    if message_type == "emergency_stop":
+        return EmergencyStop(command_id)
+
+    if message_type == "reset":
+        return Reset(command_id)
 
     if message_type == "move_linear":
         raise ProtocolError("not_implemented", "move_linear ist in Protokollversion 1 nicht umgesetzt.", command_id)
@@ -173,4 +189,5 @@ def state(seq: int, robot_state: RobotState) -> dict:
         "status": robot_state.status.value,
         "override": robot_state.override,
         "joints": [round(angle, 4) for angle in robot_state.joints],
+        "error": robot_state.error,
     }

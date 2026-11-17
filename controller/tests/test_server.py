@@ -141,6 +141,46 @@ class HelloAndRolesTests(ServerTestCase):
         await observer.receive("ack")   # darf jetzt steuern
 
 
+class EmergencyStopTests(ServerTestCase):
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        self.owner = await self.connect()
+        await self.owner.receive("hello")
+        self.observer = await self.connect()
+        await self.observer.receive("hello")
+
+    async def test_observer_may_trigger_emergency_stop(self):
+        await self.owner.send('{"type":"move_joints","id":1,"joints":[300,0,0,0,0,0]}')
+        await self.owner.receive("ack")
+        await self.observer.send('{"type":"emergency_stop","id":1}')
+        await self.observer.receive("ack")
+        state = await self.owner.wait_for_state(lambda s: s["status"] == "error")
+        self.assertIn("Not-Halt", state["error"])
+
+    async def test_moves_rejected_until_owner_resets(self):
+        await self.observer.send('{"type":"emergency_stop","id":1}')
+        await self.observer.receive("ack")
+
+        await self.owner.send('{"type":"move_joints","id":2,"joints":[10,0,0,0,0,0]}')
+        self.assertEqual((await self.owner.receive("error"))["code"], "emergency_stop_active")
+
+        await self.observer.send('{"type":"reset","id":2}')   # Beobachter darf nicht quittieren
+        self.assertEqual((await self.observer.receive("error"))["code"], "not_owner")
+
+        await self.owner.send('{"type":"reset","id":3}')
+        await self.owner.receive("ack")
+        await self.owner.wait_for_state(lambda s: s["status"] == "idle" and s["error"] is None)
+        await self.owner.send('{"type":"move_joints","id":4,"joints":[10,0,0,0,0,0]}')
+        await self.owner.receive("ack")
+
+    async def test_console_emergency_stop_and_reset(self):
+        self.server.handle_console_command("estop")
+        state = await self.owner.wait_for_state(lambda s: s["status"] == "error")
+        self.assertEqual(state["error"], "Not-Halt am Controller")
+        self.server.handle_console_command("reset")
+        await self.owner.wait_for_state(lambda s: s["status"] == "idle")
+
+
 class StateTests(ServerTestCase):
     async def test_states_arrive_at_about_50_hz_with_increasing_seq(self):
         """Eine Sekunde lang ALLE Zustände mitlesen und über den ganzen Zeitraum mitteln.

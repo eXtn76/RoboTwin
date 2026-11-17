@@ -65,7 +65,7 @@ namespace RoboTwin.UI
                 controller.Host.ControlChanged -= UpdateControls;
         }
 
-        void UpdateControls() => moveButton.SetEnabled(controller.Host.CanControl);
+        void UpdateControls() => moveButton.SetEnabled(controller.Host.CanMove);
 
         // Nur planen, nicht fahren: zeigt, ob das Ziel erreichbar wäre.
         void UpdatePreview()

@@ -29,6 +29,16 @@ namespace RoboTwin.Connection
     {
     }
 
+    /// <summary>Not-Halt: sofort anhalten und alle Fahrbefehle sperren, bis quittiert wird. Später: "emergency_stop".</summary>
+    public sealed class EmergencyStopCommand : RobotCommand
+    {
+    }
+
+    /// <summary>Not-Halt quittieren. Später: "reset".</summary>
+    public sealed class ResetCommand : RobotCommand
+    {
+    }
+
     /// <summary>Geschwindigkeits-Override setzen (1 … 100 %), wirkt auch auf laufende Bewegungen.</summary>
     public sealed class SetOverrideCommand : RobotCommand
     {

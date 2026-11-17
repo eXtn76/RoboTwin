@@ -63,6 +63,7 @@ class RobotState:
     status: RobotStatus
     override: float
     timestamp: float
+    error: Optional[str] = None   # Grund des Fehlerzustands (z. B. Not-Halt), sonst None
 
 
 def load_joint_limits(urdf_path: Path | str, acceleration: float = DEFAULT_ACCELERATION) -> list[JointLimits]:
@@ -133,6 +134,7 @@ class Robot:
             [j.max_acceleration for j in self.limits],
             start,
         )
+        self._emergency_stop: Optional[str] = None   # Grund, solange der Not-Halt aktiv ist
         self._command_speed = 1.0    # Geschwindigkeit des laufenden Befehls (0..1)
         self._override = 100.0       # globaler Override in Prozent
         self._time = 0.0             # "Uhr des Controllers" in Sekunden
@@ -147,8 +149,14 @@ class Robot:
 
     # ---- Befehle ----
 
+    @property
+    def emergency_stop_active(self) -> bool:
+        return self._emergency_stop is not None
+
     def move_joints(self, joints: Sequence[float], speed: float = 1.0) -> None:
         """Alle Gelenke synchron zu den Zielwinkeln fahren. Wirft CommandError bei ungültigen Werten."""
+        if self._emergency_stop is not None:
+            raise CommandError("emergency_stop_active", "Not-Halt aktiv – erst quittieren (reset).")
         if len(joints) != self.joint_count:
             raise CommandError("invalid_command", f"Erwartet {self.joint_count} Gelenkwinkel, erhalten {len(joints)}.")
 
@@ -174,6 +182,16 @@ class Robot:
         """Sofort anhalten."""
         self._motion.stop()
 
+    def emergency_stop(self, reason: str = "Not-Halt") -> None:
+        """Sofort anhalten (Stopp-Kategorie 0) und alle Fahrbefehle sperren, bis quittiert wird."""
+        self._motion.stop()
+        if self._emergency_stop is None:   # der erste Grund bleibt stehen
+            self._emergency_stop = reason
+
+    def reset(self) -> None:
+        """Not-Halt quittieren. Ohne aktiven Not-Halt passiert nichts (idempotent)."""
+        self._emergency_stop = None
+
     def set_override(self, percent: float) -> None:
         """Override 1 … 100 %, wirkt auch auf eine laufende Bewegung."""
         if not 1.0 <= percent <= 100.0:
@@ -189,8 +207,13 @@ class Robot:
         self._time += dt
 
     def state(self) -> RobotState:
-        status = RobotStatus.MOVING if self._motion.is_moving else RobotStatus.IDLE
-        return RobotState(self._motion.current, status, self._override, self._time)
+        if self._emergency_stop is not None:
+            status = RobotStatus.ERROR
+        elif self._motion.is_moving:
+            status = RobotStatus.MOVING
+        else:
+            status = RobotStatus.IDLE
+        return RobotState(self._motion.current, status, self._override, self._time, self._emergency_stop)
 
     def _apply_speed(self) -> None:
         self._motion.speed_factor = self._command_speed * self._override / 100.0

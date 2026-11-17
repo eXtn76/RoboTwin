@@ -21,7 +21,7 @@ namespace RoboTwin.Connection
     {
         Idle,       // steht, bereit für Befehle
         Moving,     // fährt
-        Error       // Fehlerzustand (z. B. Not-Halt, ab M7)
+        Error       // Fehlerzustand (Not-Halt aktiv) – Fahrbefehle werden abgelehnt
     }
 
     /// <summary>
@@ -34,13 +34,16 @@ namespace RoboTwin.Connection
         public readonly RobotStatus Status;
         public readonly float OverridePercent;
         public readonly double Timestamp;   // Sekunden, Uhr des CONTROLLERS (nicht die von Unity)
+        public readonly string ErrorMessage; // Grund des Fehlerzustands (z. B. Not-Halt), sonst null
 
-        public RobotState(float[] joints, RobotStatus status, float overridePercent, double timestamp)
+        public RobotState(float[] joints, RobotStatus status, float overridePercent, double timestamp,
+                          string errorMessage = null)
         {
             Joints = joints;
             Status = status;
             OverridePercent = overridePercent;
             Timestamp = timestamp;
+            ErrorMessage = errorMessage;
         }
     }
 }

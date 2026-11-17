@@ -42,6 +42,9 @@ Siehe [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
   - Python-Controller unter Windows: Timer-Auflösung ~15,6 ms, daher schwankt der Abstand
     zwischen zwei state-Nachrichten (15–31 ms); im Mittel 50 Hz (feste Zielzeitpunkte).
   - Protokoll ohne Anmeldung/Verschlüsselung: Controller lauscht standardmäßig nur auf 127.0.0.1.
+  - Not-Halt ist Stopp-Kategorie 0 (sofort stehen); echte Roboter bremsen oft kontrolliert (Kat. 1).
+  - Programme laufen in Unity (ProgramRunner) – trennt sich Unity, endet das Programm
+    (sicher: Controller hält beim Verlust des Besitzers an).
   - URDF-Grenzen vorsichtiger als UR5-Datenblatt: Handgelenke 180 statt 360 °/s,
     Ellbogen ±180° statt ±360°.
 -->
@@ -50,4 +53,9 @@ Siehe [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
 
 ## Ausblick
 
-<!-- M8: z. B. ROS 2 oder echter Servo-Arm als weitere IRobotConnection -->
+<!-- M8: z. B. ROS 2 oder echter Servo-Arm als weitere IRobotConnection
+  - Programme im Controller ausführen (Entscheidung A2 in M7): Unity lädt das Programm hoch
+    ("run_program"), Python spielt es ab und meldet den Fortschritt – läuft dann auch ohne UI weiter.
+  - "take_control": Steuerung übernehmen statt Rollen nach Verbindungsreihenfolge (R2 in M6).
+  - move_linear: lineare TCP-Bahnen (IK in Python oder Bahn in Unity vorberechnen).
+-->

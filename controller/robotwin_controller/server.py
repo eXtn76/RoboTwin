@@ -12,10 +12,11 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import logging
+import threading
 from typing import Optional
 
 from . import protocol
-from .protocol import MoveJoints, ProtocolError, SetOverride, Stop
+from .protocol import EmergencyStop, MoveJoints, ProtocolError, Reset, SetOverride, Stop
 from .robot import CommandError, Robot
 
 log = logging.getLogger("robotwin")
@@ -92,9 +93,14 @@ class RobotServer:
         self._tick_task = asyncio.create_task(self._tick_loop())
         log.info("Controller läuft auf %s:%d mit %d Hz", self.host, self.port, self.state_rate)
 
-    async def run(self) -> None:
-        """Startet und läuft, bis abgebrochen wird (Strg+C) oder der Takt mit einem Fehler endet."""
+    async def run(self, console: bool = False) -> None:
+        """Startet und läuft, bis abgebrochen wird (Strg+C) oder der Takt mit einem Fehler endet.
+
+        console=True: Befehle im Konsolenfenster des Controllers annehmen (Not-Halt am Controller).
+        """
         await self.start()
+        if console:
+            self._start_console()
         try:
             # gather: Endet eine der beiden Aufgaben mit einem Fehler, endet run() mit diesem Fehler.
             await asyncio.gather(self._server.serve_forever(), self._tick_task)
@@ -154,10 +160,10 @@ class RobotServer:
             client.send(protocol.error(error.command_id, error.code, error.message))
             return
 
-        # Rollen: Nur der Besitzer steuert – anhalten darf jeder.
-        if not isinstance(command, Stop) and client is not self.owner:
+        # Rollen: Nur der Besitzer steuert – anhalten (auch per Not-Halt) darf jeder.
+        if not isinstance(command, (Stop, EmergencyStop)) and client is not self.owner:
             client.send(protocol.error(command.id, "not_owner",
-                                       "Nur der Besitzer darf steuern (stop ist immer erlaubt)."))
+                                       "Nur der Besitzer darf steuern (stop und emergency_stop sind immer erlaubt)."))
             return
 
         try:
@@ -167,6 +173,13 @@ class RobotServer:
                 self.robot.stop()
             elif isinstance(command, SetOverride):
                 self.robot.set_override(command.percent)
+            elif isinstance(command, EmergencyStop):
+                self.robot.emergency_stop(f"Not-Halt von {client.name}")
+                log.warning("NOT-HALT ausgelöst von %s", client.name)
+            elif isinstance(command, Reset):
+                if self.robot.emergency_stop_active:
+                    log.info("Not-Halt quittiert von %s", client.name)
+                self.robot.reset()
         except CommandError as error:
             client.send(protocol.error(command.id, error.code, error.message))
             return
@@ -185,6 +198,47 @@ class RobotServer:
         if self.owner is not None:
             self.owner.send(protocol.role_changed(OWNER))
             log.info("%s ist neuer Besitzer", self.owner.name)
+
+    # ---- Konsole des Controllers ("Not-Halt am Schaltschrank") ----
+
+    def _start_console(self) -> None:
+        """Liest Befehle aus dem Konsolenfenster.
+
+        input() blockiert und läuft deshalb in einem eigenen Thread; jede Zeile wird per
+        call_soon_threadsafe an die Event-Loop übergeben – dasselbe Muster wie im Test-Client.
+        """
+        loop = asyncio.get_running_loop()
+
+        def read_console() -> None:
+            while True:
+                try:
+                    line = input()
+                except (EOFError, OSError):
+                    return   # keine Konsole (z. B. Ausgabe umgeleitet) oder Eingabe beendet
+                loop.call_soon_threadsafe(self.handle_console_command, line)
+
+        threading.Thread(target=read_console, daemon=True).start()
+        log.info("Konsole: 'estop' = Not-Halt, 'reset' = quittieren, 'status', 'help'")
+
+    def handle_console_command(self, line: str) -> None:
+        command = line.strip().lower()
+        if command == "estop":
+            self.robot.emergency_stop("Not-Halt am Controller")
+            log.warning("NOT-HALT am Controller ausgelöst")
+        elif command == "reset":
+            if self.robot.emergency_stop_active:
+                log.info("Not-Halt am Controller quittiert")
+            self.robot.reset()
+        elif command == "status":
+            state = self.robot.state()
+            joints = ", ".join(f"{angle:.1f}" for angle in state.joints)
+            log.info("Status %s, Override %.0f %%, Gelenke [%s], Clients %d%s",
+                     state.status.value, state.override, joints, len(self.clients),
+                     f", Fehler: {state.error}" if state.error else "")
+        elif command in ("help", "?"):
+            log.info("Konsole: 'estop' = Not-Halt, 'reset' = quittieren, 'status', 'help'")
+        elif command:
+            log.info("Unbekannter Konsolenbefehl '%s' – 'help' zeigt alle.", command)
 
     # ---- Takt ----
 

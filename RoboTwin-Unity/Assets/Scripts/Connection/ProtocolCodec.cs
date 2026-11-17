@@ -105,6 +105,16 @@ namespace RoboTwin.Connection
                     ["type"] = "stop",
                     ["id"] = stop.Id
                 },
+                EmergencyStopCommand emergencyStop => new JObject
+                {
+                    ["type"] = "emergency_stop",
+                    ["id"] = emergencyStop.Id
+                },
+                ResetCommand reset => new JObject
+                {
+                    ["type"] = "reset",
+                    ["id"] = reset.Id
+                },
                 SetOverrideCommand setOverride => new JObject
                 {
                     ["type"] = "set_override",
@@ -173,7 +183,8 @@ namespace RoboTwin.Connection
                 ReadFloatArray((JArray)json["joints"]),
                 status,
                 (float)json["override"],
-                (double)json["timestamp"]);
+                (double)json["timestamp"],
+                (string)json["error"]);   // fehlt oder null → null
             return new StateMessage((long)json["seq"], state);
         }
 

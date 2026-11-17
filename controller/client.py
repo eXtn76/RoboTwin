@@ -26,6 +26,8 @@ HELP = """Befehle:
   home [speed]                     alle Gelenke auf 0°
   stop                             sofort anhalten
   override P                       Override in Prozent (1..100)
+  estop                            NOT-HALT (sperrt alle Fahrbefehle)
+  reset                            Not-Halt quittieren
   state                            aktuellen Zustand einmal anzeigen
   watch [Sekunden]                 Zustand mitlaufen lassen (Standard 3 s)
   raw JSON                         eine beliebige Zeile senden (zum Testen von Fehlern)
@@ -128,7 +130,8 @@ class ControllerClient:
             self.latest_state = message
             self.state_received.set()
             if previous is None or previous["status"] != message["status"]:
-                print(f"  Status: {message['status']}")
+                reason = f" – {message['error']}" if message.get("error") else ""
+                print(f"  Status: {message['status']}{reason}")
             loop = asyncio.get_running_loop()
             if loop.time() < self._watch_until and message["seq"] % 10 == 0:   # 5-mal pro Sekunde
                 print("  " + format_state(message))
@@ -191,6 +194,10 @@ async def handle_input(client: ControllerClient, line: str) -> bool:
             await client.command("move_joints", **fields)
         elif name == "stop":
             await client.command("stop")
+        elif name == "estop":
+            await client.command("emergency_stop")
+        elif name == "reset":
+            await client.command("reset")
         elif name == "override":
             if len(args) != 1:
                 print("override braucht einen Wert, z. B.: override 50")
@@ -279,6 +286,13 @@ async def demo(client: ControllerClient, stop_after: float = 1.0) -> bool:
         await client.command("stop")
         state = await client.wait_until_idle()
         print("  angehalten bei: " + format_state(state))
+
+        print("\n▶ Not-Halt: danach muss jeder Fahrbefehl abgelehnt werden, bis quittiert wird")
+        await client.command("emergency_stop")
+        reply = await client.command("move_joints", joints=[0, 0, 0, 0, 0, 0])
+        if reply.get("code") != "emergency_stop_active":
+            raise RuntimeError(f"erwartet emergency_stop_active, erhalten {reply}")
+        await client.command("reset")
 
         await client.command("set_override", percent=100)
         await move([0, 0, 0, 0, 0, 0], "Home")

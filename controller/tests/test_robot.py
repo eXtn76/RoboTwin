@@ -186,6 +186,51 @@ class OverrideAndStopTests(unittest.TestCase):
         self.assertEqual(robot.state().joints, position)
 
 
+class EmergencyStopTests(unittest.TestCase):
+    def test_emergency_stop_halts_and_reports_error(self):
+        robot = make_robot()
+        robot.move_joints([300, 0, 0, 0, 0, 0])
+        for _ in range(25):
+            robot.step(DT)
+        robot.emergency_stop("Test")
+        position = robot.state().joints
+        robot.step(DT)
+        state = robot.state()
+        self.assertEqual(state.status, RobotStatus.ERROR)
+        self.assertEqual(state.error, "Test")
+        self.assertEqual(state.joints, position)
+
+    def test_moves_are_rejected_until_reset(self):
+        robot = make_robot()
+        robot.emergency_stop()
+        with self.assertRaises(CommandError) as caught:
+            robot.move_joints([10, 0, 0, 0, 0, 0])
+        self.assertEqual(caught.exception.code, "emergency_stop_active")
+
+        robot.reset()
+        robot.move_joints([10, 0, 0, 0, 0, 0])   # jetzt wieder erlaubt
+        self.assertEqual(robot.state().status, RobotStatus.MOVING)
+        self.assertIsNone(robot.state().error)
+
+    def test_stop_and_override_stay_allowed(self):
+        robot = make_robot()
+        robot.emergency_stop()
+        robot.stop()
+        robot.set_override(50)
+        self.assertEqual(robot.state().override, 50)
+
+    def test_first_reason_is_kept(self):
+        robot = make_robot()
+        robot.emergency_stop("erster")
+        robot.emergency_stop("zweiter")
+        self.assertEqual(robot.state().error, "erster")
+
+    def test_reset_without_emergency_stop_is_harmless(self):
+        robot = make_robot()
+        robot.reset()
+        self.assertEqual(robot.state().status, RobotStatus.IDLE)
+
+
 class StateTests(unittest.TestCase):
     def test_timestamp_advances_with_simulation_time(self):
         robot = make_robot()

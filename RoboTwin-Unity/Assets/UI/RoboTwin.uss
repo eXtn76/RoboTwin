@@ -169,3 +169,26 @@
 .message--warning {
     color: rgb(255, 196, 90);
 }
+
+/* ---- Not-Halt ---- */
+
+.safety-bar {
+    margin-top: 4px;
+    margin-bottom: 8px;
+}
+
+/* Groß, rot, nicht zu übersehen – wie der Pilztaster am echten Pendant. */
+.button-emergency {
+    flex-grow: 1;
+    height: 40px;
+    font-size: 16px;
+    -unity-font-style: bold;
+    color: rgb(255, 255, 255);
+    background-color: rgb(200, 20, 20);
+    border-width: 2px;
+    border-color: rgb(255, 210, 0);
+}
+
+.button-emergency:hover {
+    background-color: rgb(230, 30, 30);
+}

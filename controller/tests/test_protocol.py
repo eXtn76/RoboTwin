@@ -10,7 +10,15 @@ import unittest
 from pathlib import Path
 
 from robotwin_controller import protocol
-from robotwin_controller.protocol import MoveJoints, ProtocolError, SetOverride, Stop, parse_command
+from robotwin_controller.protocol import (
+    EmergencyStop,
+    MoveJoints,
+    ProtocolError,
+    Reset,
+    SetOverride,
+    Stop,
+    parse_command,
+)
 from robotwin_controller.robot import CommandError, JointLimits, Robot, RobotState, RobotStatus
 
 PROTOCOL_MD = Path(__file__).resolve().parents[2] / "docs" / "PROTOCOL.md"
@@ -37,6 +45,10 @@ class ParseValidCommandsTests(unittest.TestCase):
 
     def test_set_override(self):
         self.assertEqual(parse_command('{"type":"set_override","id":3,"percent":50}'), SetOverride(3, 50.0))
+
+    def test_emergency_stop_and_reset(self):
+        self.assertEqual(parse_command('{"type":"emergency_stop","id":8}'), EmergencyStop(8))
+        self.assertEqual(parse_command('{"type":"reset","id":9}'), Reset(9))
 
     def test_unknown_fields_are_ignored(self):
         self.assertEqual(parse_command('{"type":"stop","id":4,"comment":"neu in Version 2"}'), Stop(4))
@@ -115,6 +127,7 @@ class EncodeTests(unittest.TestCase):
         self.assertEqual(message["joints"][0], 1.1235)
         self.assertEqual(message["timestamp"], 1.235)
         self.assertEqual(message["status"], "moving")
+        self.assertIsNone(message["error"])
 
 
 class ProtocolDocumentTests(unittest.TestCase):

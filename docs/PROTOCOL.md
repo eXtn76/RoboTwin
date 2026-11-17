@@ -1,6 +1,7 @@
 # RoboTwin-Protokoll
 
-Version **1**
+Version **1** (mit Erweiterung Not-Halt aus M7 – abwärtskompatibel: neue Befehle und Felder,
+die ältere Clients ignorieren)
 
 Dieses Dokument beschreibt, wie ein Client (Unity, Test-Client) mit dem RoboTwin-Controller
 spricht. Es ist der Vertrag zwischen beiden Seiten: Was hier steht, gilt – unabhängig davon,
@@ -61,7 +62,8 @@ Mehrere Clients dürfen gleichzeitig verbunden sein. Alle erhalten `state`.
 
 - Der **erste** Client wird **Besitzer** (`owner`) und darf steuern.
 - Alle weiteren sind **Beobachter** (`observer`). Ihre Befehle werden mit `not_owner` abgelehnt.
-- **Ausnahme: `stop` darf jeder senden.** Anhalten muss von überall möglich sein.
+- **Ausnahme: `stop` und `emergency_stop` darf jeder senden.** Anhalten muss von überall möglich sein.
+- `reset` (Not-Halt quittieren) darf nur der Besitzer – oder jemand an der Konsole des Controllers.
 - Trennt sich der Besitzer, **hält der Roboter an**, und der am längsten verbundene Beobachter
   wird neuer Besitzer. Er erhält die Nachricht `role`.
 
@@ -105,6 +107,29 @@ Darf von jedem Client gesendet werden (auch von Beobachtern).
 
 Wirkt auch auf eine laufende Bewegung. Der Override begrenzt nur die Geschwindigkeit,
 nicht die Beschleunigung.
+
+### `emergency_stop` – Not-Halt
+
+```json
+{"type":"emergency_stop","id":4}
+```
+
+Darf von jedem Client gesendet werden. Der Roboter hält **sofort** an (Stopp-Kategorie 0) und
+geht in den Fehlerzustand: `state.status` ist `error`, `state.error` nennt den Grund.
+Bis zum Quittieren wird jeder `move_joints` mit `emergency_stop_active` abgelehnt;
+`stop` und `set_override` bleiben erlaubt.
+
+Auch im Konsolenfenster des Controllers kann der Not-Halt ausgelöst werden (`estop`) –
+wie der Not-Halt-Taster am Schaltschrank, unabhängig von jedem Client.
+
+### `reset` – Not-Halt quittieren
+
+```json
+{"type":"reset","id":5}
+```
+
+Nur der Besitzer (oder `reset` in der Konsole des Controllers). Hebt den Fehlerzustand auf;
+ohne aktiven Not-Halt passiert nichts (wird trotzdem mit `ack` bestätigt).
 
 ### `move_linear` – reserviert
 
@@ -155,16 +180,17 @@ Lineare Bewegung des TCP. In Version 1 **nicht umgesetzt**; der Controller antwo
 
 ```json
 {"type":"state","seq":1234,"timestamp":24.68,"status":"moving","override":50,
- "joints":[12.5,-80.1,95.0,-90.0,-90.0,3.2]}
+ "joints":[12.5,-80.1,95.0,-90.0,-90.0,3.2],"error":null}
 ```
 
 | Feld | Bedeutung |
 |---|---|
 | `seq` | fortlaufende Nummer der `state`-Nachricht |
 | `timestamp` | Zeit des Controllers in Sekunden |
-| `status` | `idle`, `moving` oder `error` |
+| `status` | `idle`, `moving` oder `error` (Not-Halt aktiv) |
 | `override` | aktueller Override in Prozent |
 | `joints` | Ist-Winkel in Grad |
+| `error` | Grund des Fehlerzustands (z. B. `"Not-Halt von 127.0.0.1:50000"`), sonst `null` |
 
 ## 7. Fehlercodes
 
@@ -174,7 +200,8 @@ Lineare Bewegung des TCP. In Version 1 **nicht umgesetzt**; der Controller antwo
 | `invalid_command` | Pflichtfeld fehlt, falscher Typ oder Wert außerhalb des erlaubten Bereichs |
 | `unknown_command` | unbekannter `type` |
 | `not_implemented` | Befehl ist reserviert, aber noch nicht umgesetzt |
-| `not_owner` | Befehl von einem Beobachter (außer `stop`) |
+| `not_owner` | Befehl von einem Beobachter (außer `stop` und `emergency_stop`) |
+| `emergency_stop_active` | Fahrbefehl während eines aktiven Not-Halts |
 | `joint_limit` | Zielwinkel außerhalb der Achsgrenzen |
 
 Clientseitig verwendet Unity zusätzlich `not_connected`, wenn ohne Verbindung gesendet wird.
@@ -186,14 +213,14 @@ Dieser Code wird nie vom Controller verschickt.
 → = Client an Controller, ← = Controller an Client
 
 ← {"type":"hello","protocol":1,"controller":"RoboTwin Python Controller","role":"owner","state_rate":50,"joints":[…]}
-← {"type":"state","seq":1,"timestamp":0.02,"status":"idle","override":100,"joints":[0,0,0,0,0,0]}
+← {"type":"state","seq":1,"timestamp":0.02,"status":"idle","override":100,"joints":[0,0,0,0,0,0],"error":null}
 → {"type":"move_joints","id":1,"joints":[0,-90,90,-90,-90,0]}
 ← {"type":"ack","id":1}
-← {"type":"state","seq":2,"timestamp":0.04,"status":"moving","override":100,"joints":[0,-0.07,0.07,-0.07,-0.07,0]}
+← {"type":"state","seq":2,"timestamp":0.04,"status":"moving","override":100,"joints":[0,-0.07,0.07,-0.07,-0.07,0],"error":null}
   …
 → {"type":"move_joints","id":2,"joints":[0,0,200,0,0,0]}
 ← {"type":"error","id":2,"code":"joint_limit","message":"Gelenk 3: 200.0° außerhalb [-180°, 180°]."}
 → {"type":"stop","id":3}
 ← {"type":"ack","id":3}
-← {"type":"state","seq":75,"timestamp":1.50,"status":"idle","override":100,"joints":[0,-58.1,58.1,-58.1,-58.1,0]}
+← {"type":"state","seq":75,"timestamp":1.50,"status":"idle","override":100,"joints":[0,-58.1,58.1,-58.1,-58.1,0],"error":null}
 ```

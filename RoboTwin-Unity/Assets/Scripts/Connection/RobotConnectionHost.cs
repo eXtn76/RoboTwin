@@ -38,6 +38,11 @@ namespace RoboTwin.Connection
         /// <summary>Darf Unity gerade steuern? Verbunden UND Besitzer.</summary>
         public bool CanControl => IsConnected && Connection.Role == ControlRole.Owner;
 
+        /// <summary>Darf Unity gerade FAHREN? Steuern dürfen UND kein Not-Halt aktiv.</summary>
+        public bool CanMove => CanControl && model.Status != RobotStatus.Error;
+
+        RobotStatus lastRobotStatus;
+
         // ---- Weitergeleitete Events der aktiven Verbindung ----
         public event Action<ConnectionStatus> StatusChanged;
         public event Action<ControlRole> RoleChanged;
@@ -47,7 +52,8 @@ namespace RoboTwin.Connection
         /// <summary>Verbindung wurde ausgetauscht (Simulation ↔ Netzwerk, neue Adresse).</summary>
         public event Action ConnectionSwitched;
 
-        /// <summary>Etwas hat sich geändert, das CanControl/IsConnected beeinflusst (Status, Rolle, Umschalten).</summary>
+        /// <summary>Etwas hat sich geändert, das CanControl/CanMove/IsConnected beeinflusst
+        /// (Verbindungsstatus, Rolle, Umschalten, Not-Halt).</summary>
         public event Action ControlChanged;
 
         void Reset() => model = GetComponent<RobotModel>();
@@ -57,6 +63,17 @@ namespace RoboTwin.Connection
         {
             Mode = startMode;
             Attach(CreateConnection(Mode));
+            model.StateChanged += OnModelStateChanged;
+        }
+
+        // Not-Halt gesetzt oder quittiert → CanMove hat sich geändert.
+        void OnModelStateChanged()
+        {
+            bool wasError = lastRobotStatus == RobotStatus.Error;
+            bool isError = model.Status == RobotStatus.Error;
+            lastRobotStatus = model.Status;
+            if (wasError != isError)
+                ControlChanged?.Invoke();
         }
 
         void Start()
@@ -70,6 +87,8 @@ namespace RoboTwin.Connection
 
         void OnDestroy()
         {
+            if (model != null)
+                model.StateChanged -= OnModelStateChanged;
             if (Connection != null)
                 Detach();   // trennt auch die TCP-Verbindung → der Netzwerk-Thread endet
         }

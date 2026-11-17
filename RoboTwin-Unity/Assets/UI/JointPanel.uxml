@@ -21,6 +21,12 @@
         </ui:VisualElement>
         <ui:Label name="warning-label" text="" class="message message--warning" />
 
+        <!-- Sicherheit: Not-Halt (auch Escape-Taste) und Quittieren (JointPanel.cs) -->
+        <ui:VisualElement class="row safety-bar">
+            <ui:Button name="emergency-stop-button" text="NOT-HALT  (Esc)" class="button button-emergency" />
+            <ui:Button name="reset-button" text="Quittieren" class="button" />
+        </ui:VisualElement>
+
         <ui:VisualElement class="row">
             <ui:Label text="Override (%)" class="row-label" />
             <ui:SliderInt name="override-slider" low-value="1" high-value="100" value="100"
