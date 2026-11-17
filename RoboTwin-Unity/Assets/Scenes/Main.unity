@@ -1806,6 +1806,7 @@ GameObject:
   - component: {fileID: 574433023}
   - component: {fileID: 574433022}
   - component: {fileID: 574433021}
+  - component: {fileID: 574433024}
   m_Layer: 5
   m_Name: UI
   m_TagString: Untagged
@@ -1826,7 +1827,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoboTwin.UI.JointPanel
   model: {fileID: 1080100585}
-  simulation: {fileID: 1080100584}
+  host: {fileID: 1080100588}
   kinematics: {fileID: 1080100586}
   jointRowTemplate: {fileID: 9197481963319205126, guid: e3ed984d22848b046bf4705c787e1c11, type: 3}
 --- !u!114 &574433022
@@ -1867,6 +1868,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &574433024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 574433020}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d301c2d55d8dff4cb85424ddaec5e1f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoboTwin.UI.ConnectionBar
+  host: {fileID: 1080100588}
 --- !u!1 &576901293
 GameObject:
   m_ObjectHideFlags: 8
@@ -2740,9 +2754,9 @@ GameObject:
   - component: {fileID: 1080100583}
   - component: {fileID: 1080100582}
   - component: {fileID: 1080100585}
-  - component: {fileID: 1080100584}
   - component: {fileID: 1080100586}
   - component: {fileID: 1080100587}
+  - component: {fileID: 1080100588}
   m_Layer: 0
   m_Name: ur5
   m_TagString: robot
@@ -2783,28 +2797,6 @@ Transform:
   - {fileID: 1032231503}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1080100584
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1080100580}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eef83f794280047458c992877d04aef2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::RoboTwin.Model.LocalRobotSimulation
-  model: {fileID: 1080100585}
-  acceleration: 180
-  overridePercent: 100
-  testTargets:
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
 --- !u!114 &1080100585
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2853,9 +2845,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RoboTwin.Kinematics.CartesianController
   model: {fileID: 1080100585}
   kinematics: {fileID: 1080100586}
-  simulation: {fileID: 1080100584}
+  host: {fileID: 1080100588}
   testTargetMm: {x: 400, y: -200, z: 300}
   testOrientation: 0
+--- !u!114 &1080100588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1080100580}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61895cb06ff6b5545916ea498353a05d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoboTwin.Connection.RobotConnectionHost
+  model: {fileID: 1080100585}
+  acceleration: 180
+  connectOnStart: 1
 --- !u!1 &1088733767
 GameObject:
   m_ObjectHideFlags: 8
