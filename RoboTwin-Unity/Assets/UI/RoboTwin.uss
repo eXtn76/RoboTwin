@@ -192,3 +192,84 @@
 .button-emergency:hover {
     background-color: rgb(230, 30, 30);
 }
+
+/* ---- Programm-Panel ---- */
+
+/* Rechte Spalte, unter dem Kartesisch-Panel. */
+.panel--program {
+    top: 300px;
+    width: 470px;
+}
+
+.point-list {
+    max-height: 230px;
+    margin-bottom: 6px;
+}
+
+.program-header > Label {
+    color: rgb(138, 144, 153);
+}
+
+.point-index {
+    width: 22px;
+    color: rgb(138, 144, 153);
+}
+
+.point-name {
+    flex-grow: 1;
+}
+
+.point-name-header {
+    flex-grow: 1;
+}
+
+.point-speed {
+    width: 50px;
+}
+
+.point-speed-header {
+    width: 64px;
+}
+
+.point-wait {
+    width: 46px;
+}
+
+.point-wait-header {
+    width: 136px;
+}
+
+.unit {
+    color: rgb(138, 144, 153);
+    margin-right: 4px;
+}
+
+.point-button {
+    width: 26px;
+    margin-left: 1px;
+    margin-right: 1px;
+}
+
+/* Der Punkt, den das Programm gerade anfährt. */
+.program-row--active {
+    background-color: rgba(127, 209, 255, 0.18);
+    border-radius: 4px;
+}
+
+.file-select {
+    flex-grow: 1;
+}
+
+.file-select > .unity-base-field__label {
+    min-width: 40px;
+    color: rgb(201, 205, 210);
+}
+
+.loop-toggle {
+    margin-left: 8px;
+}
+
+.loop-toggle > .unity-base-field__label {
+    min-width: 80px;
+    color: rgb(201, 205, 210);
+}

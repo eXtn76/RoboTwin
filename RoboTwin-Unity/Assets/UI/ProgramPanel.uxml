@@ -1,0 +1,39 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="RoboTwin.uss" />
+
+    <!-- Programme (Teach-Pendant-Prinzip): Positionen speichern, Liste bearbeiten, abspielen,
+         als JSON speichern/laden. Die Punktzeilen erzeugt ProgramPanel.cs aus ProgramRow.uxml. -->
+    <ui:VisualElement name="program-panel" class="panel panel--right panel--program">
+        <ui:Label text="Programm" class="panel-title" />
+
+        <ui:TextField name="program-name" label="Name" class="coord-field" />
+
+        <ui:VisualElement class="row program-header">
+            <ui:Label text="#" class="point-index" />
+            <ui:Label text="Punkt" class="point-name-header" />
+            <ui:Label text="Speed" class="point-speed-header" />
+            <ui:Label text="Warten" class="point-wait-header" />
+        </ui:VisualElement>
+        <ui:ScrollView name="point-list" class="point-list" />
+
+        <ui:VisualElement class="row">
+            <ui:Button name="teach-button" text="Position speichern" class="button" />
+            <ui:Button name="new-button" text="Neu" class="button" />
+        </ui:VisualElement>
+
+        <ui:VisualElement class="row">
+            <ui:DropdownField name="file-select" label="Datei" class="file-select" />
+            <ui:Button name="load-button" text="Laden" class="button" />
+            <ui:Button name="save-button" text="Speichern" class="button" />
+        </ui:VisualElement>
+
+        <ui:VisualElement class="row footer">
+            <ui:Button name="play-button" text="Start" class="button" />
+            <ui:Button name="pause-button" text="Pause" class="button" />
+            <ui:Button name="program-stop-button" text="Stop" class="button" />
+            <ui:Toggle name="loop-toggle" label="Wiederholen" class="loop-toggle" />
+        </ui:VisualElement>
+
+        <ui:Label name="program-message" text="" class="message" />
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <!-- Vorlage für EINEN Programmpunkt. Werte und Aktionen setzt ProgramPanel.cs.
+         Buttons: -> anfahren, ^ nach oben, v nach unten, x löschen -->
+    <ui:VisualElement class="row program-row">
+        <ui:Label name="point-index" text="1" class="point-index" />
+        <ui:TextField name="point-name" class="point-name" />
+        <ui:IntegerField name="point-speed" class="point-speed" />
+        <ui:Label text="%" class="unit" />
+        <ui:FloatField name="point-wait" class="point-wait" />
+        <ui:Label text="s" class="unit" />
+        <ui:Button name="point-goto" text="-&gt;" class="point-button" />
+        <ui:Button name="point-up" text="^" class="point-button" />
+        <ui:Button name="point-down" text="v" class="point-button" />
+        <ui:Button name="point-delete" text="x" class="point-button" />
+    </ui:VisualElement>
+</ui:UXML>

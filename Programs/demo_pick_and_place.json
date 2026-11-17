@@ -1,0 +1,15 @@
+{
+  "format": "robotwin-program",
+  "version": 1,
+  "name": "Pick & Place (Demo)",
+  "points": [
+    {"name":"Bereitschaft","joints":[0.0,-90.0,90.0,-90.0,-90.0,0.0],"speed":1.0,"wait":0.0},
+    {"name":"Über dem Teil","joints":[120.07,-94.466,121.902,-117.439,-89.999,210.068],"speed":0.6,"wait":0.0},
+    {"name":"Greifen","joints":[120.091,-80.529,131.806,-141.277,-90.0,210.091],"speed":0.2,"wait":0.5},
+    {"name":"Teil anheben","joints":[120.091,-94.439,121.853,-117.415,-90.0,210.091],"speed":0.4,"wait":0.0},
+    {"name":"Über der Ablage","joints":[44.597,-87.801,115.401,-117.604,-89.999,134.594],"speed":0.6,"wait":0.0},
+    {"name":"Ablegen","joints":[44.611,-75.234,124.566,-139.326,-90.0,134.611],"speed":0.2,"wait":0.5},
+    {"name":"Ablage verlassen","joints":[44.609,-87.8,115.412,-117.62,-90.0,134.609],"speed":0.4,"wait":0.0},
+    {"name":"Bereitschaft","joints":[0.0,-90.0,90.0,-90.0,-90.0,0.0],"speed":1.0,"wait":0.0}
+  ]
+}
