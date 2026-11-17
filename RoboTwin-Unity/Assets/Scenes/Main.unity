@@ -2491,6 +2491,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1080100583}
   - component: {fileID: 1080100582}
+  - component: {fileID: 1080100585}
+  - component: {fileID: 1080100584}
   m_Layer: 0
   m_Name: ur5
   m_TagString: robot
@@ -2531,6 +2533,47 @@ Transform:
   - {fileID: 1032231503}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1080100584
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1080100580}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eef83f794280047458c992877d04aef2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoboTwin.Model.LocalRobotSimulation
+  model: {fileID: 1080100585}
+  acceleration: 180
+  overridePercent: 100
+  testTargets:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+--- !u!114 &1080100585
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1080100580}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ecdc93cd0a87cd409eb969f41956767, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoboTwin.Model.RobotModel
+  joints:
+  - {fileID: 1043877321}
+  - {fileID: 1089361766}
+  - {fileID: 1757204862}
+  - {fileID: 68216465}
+  - {fileID: 1060086033}
+  - {fileID: 1843941953}
 --- !u!1 &1088733767
 GameObject:
   m_ObjectHideFlags: 8
