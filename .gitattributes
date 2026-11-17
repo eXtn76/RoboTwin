@@ -1,0 +1,37 @@
+# Standard: Git erkennt Textdateien selbst und speichert sie im Repo mit LF.
+# Beim Auschecken bekommt jeder die Zeilenenden seines Systems.
+* text=auto
+
+# Unity-YAML (Szenen, Prefabs, Assets, Meta-Dateien): Unity schreibt LF.
+# Fest auf LF, damit unter Windows keine Riesen-Diffs durch CRLF entstehen.
+*.unity       text eol=lf
+*.prefab      text eol=lf
+*.asset       text eol=lf
+*.mat         text eol=lf
+*.meta        text eol=lf
+*.anim        text eol=lf
+*.controller  text eol=lf
+*.physicMaterial text eol=lf
+
+# UI Toolkit
+*.uxml        text eol=lf
+*.uss         text eol=lf
+
+# Code und Daten
+*.cs          text diff=csharp
+*.py          text diff=python eol=lf
+*.json        text eol=lf
+*.md          text
+*.urdf        text eol=lf
+*.sh          text eol=lf
+*.bat         text eol=crlf
+
+# Binaerdateien: nie Zeilenenden anfassen, nie als Text diffen.
+*.png         binary
+*.jpg         binary
+*.stl         binary
+*.fbx         binary
+*.mp4         binary
+
+# Collada-Meshes sind XML-Text, aber riesig und nicht sinnvoll diffbar.
+*.dae         -diff
