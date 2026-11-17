@@ -61,6 +61,11 @@
     color: rgb(127, 209, 255);
 }
 
+.tcp {
+    color: rgb(127, 209, 255);
+    margin-bottom: 4px;
+}
+
 .footer {
     margin-top: 8px;
 }
