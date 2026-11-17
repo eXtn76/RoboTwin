@@ -90,3 +90,37 @@
     -unity-text-align: middle-right;
     color: rgb(201, 205, 210);
 }
+
+/* ---- Kartesisch-Panel ---- */
+
+/* Variante des Panels: oben rechts statt oben links. */
+.panel--right {
+    left: auto;
+    right: 16px;
+    width: 380px;
+}
+
+.coord-field {
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+/* Beschriftung links im Feld ("X", "Werkzeug", ...). */
+.coord-field > .unity-base-field__label {
+    min-width: 90px;
+    color: rgb(201, 205, 210);
+}
+
+/* Meldung unter den Buttons; darf umbrechen. */
+.message {
+    margin-top: 8px;
+    white-space: normal;
+}
+
+.message--ok {
+    color: rgb(120, 220, 140);
+}
+
+.message--error {
+    color: rgb(255, 120, 110);
+}

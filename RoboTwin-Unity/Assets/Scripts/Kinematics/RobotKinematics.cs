@@ -38,6 +38,10 @@ namespace RoboTwin.Kinematics
         public Vector3 CurrentTcpMm() =>
             chain.ToRobotBase(chain.ForwardKinematics(model.ActualAngles).Position);
 
+        /// <summary>Punkt im Roboter-Basis-System (mm) → Weltkoordinaten, z. B. für den Zielmarker.</summary>
+        public Vector3 RobotBaseToWorld(Vector3 robotPointMm) =>
+            transform.TransformPoint(chain.FromRobotBase(robotPointMm));
+
         void Update()
         {
             // Selbsttest: FK-Ergebnis in Weltkoordinaten vs. echte Position von tool0.

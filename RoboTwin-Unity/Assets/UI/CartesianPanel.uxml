@@ -1,0 +1,21 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="RoboTwin.uss" />
+
+    <!-- Kartesischer Modus: Zielposition im Roboter-Basis-System (mm, Z oben) eingeben.
+         Die IK berechnet die Gelenkwinkel; die Vorschau zeigt vorab, ob das Ziel erreichbar ist. -->
+    <ui:VisualElement name="cartesian-panel" class="panel panel--right">
+        <ui:Label text="Kartesisch (Basis, mm)" class="panel-title" />
+
+        <ui:FloatField name="target-x" label="X" value="400" class="coord-field" />
+        <ui:FloatField name="target-y" label="Y" value="-200" class="coord-field" />
+        <ui:FloatField name="target-z" label="Z" value="300" class="coord-field" />
+        <ui:DropdownField name="orientation" label="Werkzeug" class="coord-field" />
+
+        <ui:VisualElement class="row footer">
+            <ui:Button name="move-button" text="Fahren" class="button" />
+            <ui:Button name="take-current-button" text="Aktuelle Position" class="button" />
+        </ui:VisualElement>
+
+        <ui:Label name="message-label" text="" class="message" />
+    </ui:VisualElement>
+</ui:UXML>

@@ -25,6 +25,12 @@ namespace RoboTwin.Kinematics
 
         IkSolver solver;
 
+        // Lazy Initialization: Der Solver wird beim ERSTEN Gebrauch gebaut, nicht in Start.
+        // Grund: Das Kartesisch-Panel ruft Plan() schon in SEINEM Start auf – und Unity garantiert
+        // keine Reihenfolge zwischen den Start-Methoden verschiedener Objekte. Beim ersten Gebrauch
+        // sind aber alle Awakes gelaufen, also existiert die Kette (RobotKinematics.Awake).
+        IkSolver Solver => solver ??= CreateSolver();
+
         void Reset()
         {
             model = GetComponent<RobotModel>();
@@ -32,8 +38,7 @@ namespace RoboTwin.Kinematics
             simulation = GetComponent<LocalRobotSimulation>();
         }
 
-        // Start statt Awake: RobotKinematics baut die Kette in seinem Awake.
-        void Start()
+        IkSolver CreateSolver()
         {
             int n = model.JointCount;
             var minAngles = new float[n];
@@ -43,7 +48,7 @@ namespace RoboTwin.Kinematics
                 minAngles[i] = model.GetJoint(i).MinAngle;
                 maxAngles[i] = model.GetJoint(i).MaxAngle;
             }
-            solver = new IkSolver(kinematics.Chain, minAngles, maxAngles);
+            return new IkSolver(kinematics.Chain, minAngles, maxAngles);
         }
 
         /// <summary>Ziel-Lage relativ zur Wurzel aus Position (mm, Basis) und Orientierungswahl.</summary>
@@ -59,12 +64,18 @@ namespace RoboTwin.Kinematics
         }
 
         /// <summary>
+        /// Berechnet nur die IK (Start: aktuelle Ist-Winkel), ohne zu fahren – z. B. für die Vorschau.
+        /// </summary>
+        public IkResult Plan(Vector3 targetMm, ToolOrientation orientation) =>
+            Solver.Solve(model.ActualAngles, TargetFrame(targetMm, orientation));
+
+        /// <summary>
         /// Berechnet die IK (Start: aktuelle Ist-Winkel) und fährt bei Erfolg los.
         /// Gibt false zurück, wenn das Ziel unerreichbar ist – dann bewegt sich nichts.
         /// </summary>
         public bool MoveTo(Vector3 targetMm, ToolOrientation orientation, out IkResult result)
         {
-            result = solver.Solve(model.ActualAngles, TargetFrame(targetMm, orientation));
+            result = Plan(targetMm, orientation);
             if (result.Success)
                 simulation.SetTargets(result.Angles);
             return result.Success;
