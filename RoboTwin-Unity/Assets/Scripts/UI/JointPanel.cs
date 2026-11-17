@@ -12,6 +12,7 @@ namespace RoboTwin.UI
     /// Bedienpanel für den Joint-Modus: ein Slider pro Gelenk (Soll), Anzeige der Istwerte
     /// und der TCP-Position, Override, Stop und Home.
     /// Sendet Befehle über IRobotConnection, liest Istwerte vom Modell.
+    /// Darf Unity nicht steuern (getrennt oder Beobachter), folgen die Slider nur dem Ist-Zustand.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public class JointPanel : MonoBehaviour
@@ -23,6 +24,9 @@ namespace RoboTwin.UI
 
         readonly List<Slider> targetSliders = new List<Slider>();
         readonly List<Label> actualLabels = new List<Label>();
+        SliderInt overrideSlider;
+        Button stopButton;
+        Button homeButton;
         Label tcpLabel;
         Label statusLabel;
 
@@ -30,6 +34,7 @@ namespace RoboTwin.UI
         // die Verbindung (z. B. ein entfernter Controller) kann man danach nicht fragen.
         float[] targets;
         bool wasMoving;
+        bool resyncOnNextState;   // nach dem Umschalten: Slider an den ersten neuen Zustand anpassen
 
         // Die UI kennt nur das Interface, nicht die konkrete Verbindung.
         IRobotConnection Connection => host.Connection;
@@ -44,24 +49,34 @@ namespace RoboTwin.UI
             for (int i = 0; i < targets.Length; i++)
                 targets[i] = model.ActualAngles[i];
 
-            SliderInt overrideSlider = root.Q<SliderInt>("override-slider");
+            overrideSlider = root.Q<SliderInt>("override-slider");
             overrideSlider.RegisterValueChangedCallback(evt => Connection.SendCommand(new SetOverrideCommand(evt.newValue)));
 
-            root.Q<Button>("stop-button").clicked += OnStopClicked;
-            root.Q<Button>("home-button").clicked += OnHomeClicked;
+            stopButton = root.Q<Button>("stop-button");
+            homeButton = root.Q<Button>("home-button");
+            stopButton.clicked += OnStopClicked;
+            homeButton.clicked += OnHomeClicked;
             tcpLabel = root.Q<Label>("tcp-label");
             statusLabel = root.Q<Label>("status-label");
 
             BuildJointRows(root.Q<VisualElement>("joint-rows"));
 
             model.StateChanged += OnStateChanged;
+            host.ControlChanged += UpdateControls;
+            host.ConnectionSwitched += OnConnectionSwitched;
+            UpdateControls();
         }
 
         void OnDestroy()
         {
-            // Abo beenden – sonst ruft das Modell später ein zerstörtes Panel auf.
+            // Abos beenden – sonst rufen Modell und Host später ein zerstörtes Panel auf.
             if (model != null)
                 model.StateChanged -= OnStateChanged;
+            if (host != null)
+            {
+                host.ControlChanged -= UpdateControls;
+                host.ConnectionSwitched -= OnConnectionSwitched;
+            }
         }
 
         // Erzeugt pro Gelenk eine Zeile aus der Vorlage JointRow.uxml.
@@ -120,11 +135,31 @@ namespace RoboTwin.UI
                 _ => "Status: steht"
             };
 
-            // Bewegung gerade zu Ende (egal ob durch Slider, Home, Stop oder den kartesischen Modus):
-            // Sollwerte und Slider auf die tatsächliche Position setzen.
-            if (wasMoving && !model.IsMoving)
+            // Slider auf den Ist-Zustand setzen, wenn:
+            // - wir nicht steuern (Beobachter): Die Slider spiegeln, was ein anderer Client befiehlt,
+            // - gerade umgeschaltet wurde: der neue Controller steht evtl. ganz woanders,
+            // - eine Bewegung gerade zu Ende ist (Slider, Home, Stop oder kartesischer Modus).
+            bool motionFinished = wasMoving && !model.IsMoving;
+            if (!host.CanControl || resyncOnNextState || motionFinished)
+            {
                 SyncTargetsToActual();
+                overrideSlider.SetValueWithoutNotify(Mathf.RoundToInt(model.OverridePercent));
+                resyncOnNextState = false;
+            }
             wasMoving = model.IsMoving;
+        }
+
+        void OnConnectionSwitched() => resyncOnNextState = true;
+
+        // Bedienbarkeit an Verbindung und Rolle anpassen.
+        void UpdateControls()
+        {
+            bool canControl = host.CanControl;
+            foreach (Slider slider in targetSliders)
+                slider.SetEnabled(canControl);
+            overrideSlider.SetEnabled(canControl);
+            homeButton.SetEnabled(canControl);
+            stopButton.SetEnabled(host.IsConnected);   // anhalten darf auch ein Beobachter
         }
 
         void OnStopClicked()

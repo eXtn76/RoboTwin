@@ -35,10 +35,16 @@ namespace RoboTwin.Connection
 
         public string Name => "Simulation";
         public ConnectionStatus Status => status;
+        public ControlRole Role => ControlRole.Owner;   // die Simulation gehört immer Unity
 
         public event Action<ConnectionStatus> StatusChanged;
         public event Action<RobotState> StateReceived;
         public event Action<CommandResult> CommandResultReceived;
+
+        // Rollenwechsel und Warnungen gibt es in der Simulation nicht. Leere add/remove-Blöcke
+        // erfüllen das Interface, ohne dass der Compiler "Event wird nie benutzt" meldet.
+        public event Action<ControlRole> RoleChanged { add { } remove { } }
+        public event Action<string> Warning { add { } remove { } }
 
         // Die Simulation ist sofort "verbunden" – beim Netzwerk gibt es dazwischen "Connecting".
         public void Connect() => SetStatus(ConnectionStatus.Connected);

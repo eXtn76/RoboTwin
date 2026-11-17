@@ -9,6 +9,13 @@ namespace RoboTwin.Connection
         Failed          // Verbindung verloren oder Aufbau gescheitert
     }
 
+    /// <summary>Darf dieser Client steuern? (PROTOCOL.md, Abschnitt 4)</summary>
+    public enum ControlRole
+    {
+        Owner,      // Besitzer: darf alle Befehle senden
+        Observer    // Beobachter: sieht den Zustand, darf nur anhalten
+    }
+
     /// <summary>Was der Roboter laut Controller gerade tut.</summary>
     public enum RobotStatus
     {

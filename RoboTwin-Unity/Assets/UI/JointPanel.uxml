@@ -13,6 +13,14 @@
             <ui:Label name="connection-status" text="–" class="connection-status" />
         </ui:VisualElement>
 
+        <!-- Nur im Modus "Netzwerk" sichtbar: Adresse des Python-Controllers und eigene Rolle. -->
+        <ui:VisualElement name="network-settings" class="row network-settings">
+            <ui:TextField name="network-host" label="Host" value="127.0.0.1" class="network-host" />
+            <ui:IntegerField name="network-port" label="Port" value="5005" class="network-port" />
+            <ui:Label name="connection-role" text="" class="connection-role" />
+        </ui:VisualElement>
+        <ui:Label name="warning-label" text="" class="message message--warning" />
+
         <ui:VisualElement class="row">
             <ui:Label text="Override (%)" class="row-label" />
             <ui:SliderInt name="override-slider" low-value="1" high-value="100" value="100"

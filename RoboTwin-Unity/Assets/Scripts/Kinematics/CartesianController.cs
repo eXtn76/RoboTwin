@@ -26,6 +26,9 @@ namespace RoboTwin.Kinematics
 
         IkSolver solver;
 
+        /// <summary>Die Verbindung, über die gefahren wird – z. B. um zu prüfen, ob gesteuert werden darf.</summary>
+        public RobotConnectionHost Host => host;
+
         // Lazy Initialization: Der Solver wird beim ERSTEN Gebrauch gebaut, nicht in Start.
         // Grund: Das Kartesisch-Panel ruft Plan() schon in SEINEM Start auf – und Unity garantiert
         // keine Reihenfolge zwischen den Start-Methoden verschiedener Objekte. Beim ersten Gebrauch

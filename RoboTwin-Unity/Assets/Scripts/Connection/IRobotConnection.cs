@@ -16,9 +16,16 @@ namespace RoboTwin.Connection
 
         ConnectionStatus Status { get; }
 
+        /// <summary>Darf dieser Client steuern? Die Simulation ist immer Besitzer.</summary>
+        ControlRole Role { get; }
+
         event Action<ConnectionStatus> StatusChanged;
+        event Action<ControlRole> RoleChanged;
         event Action<RobotState> StateReceived;
         event Action<CommandResult> CommandResultReceived;
+
+        /// <summary>Hinweise ohne Bezug zu einem Befehl, z. B. Verbindungsfehler oder abweichende Achsgrenzen.</summary>
+        event Action<string> Warning;
 
         void Connect();
         void Disconnect();

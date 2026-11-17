@@ -140,3 +140,32 @@
     flex-grow: 1;
     -unity-text-align: middle-right;
 }
+
+/* ---- Netzwerk-Einstellungen ---- */
+
+.network-settings {
+    margin-bottom: 4px;
+}
+
+.network-host {
+    flex-grow: 1;
+}
+
+.network-port {
+    width: 130px;
+    margin-left: 8px;
+}
+
+.network-settings .unity-base-field__label {
+    min-width: 40px;
+    color: rgb(201, 205, 210);
+}
+
+.connection-role {
+    margin-left: 8px;
+    color: rgb(201, 205, 210);
+}
+
+.message--warning {
+    color: rgb(255, 196, 90);
+}

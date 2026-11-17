@@ -20,6 +20,7 @@ namespace RoboTwin.UI
         FloatField yField;
         FloatField zField;
         DropdownField orientationField;
+        Button moveButton;
         Label messageLabel;
 
         Vector3 TargetMm => new Vector3(xField.value, yField.value, zField.value);
@@ -47,11 +48,24 @@ namespace RoboTwin.UI
             zField.RegisterValueChangedCallback(_ => UpdatePreview());
             orientationField.RegisterValueChangedCallback(_ => UpdatePreview());
 
-            root.Q<Button>("move-button").clicked += OnMoveClicked;
+            moveButton = root.Q<Button>("move-button");
+            moveButton.clicked += OnMoveClicked;
             root.Q<Button>("take-current-button").clicked += OnTakeCurrentClicked;
+
+            // Fahren nur, wenn Unity steuern darf. Die Vorschau funktioniert immer.
+            controller.Host.ControlChanged += UpdateControls;
+            UpdateControls();
 
             UpdatePreview();
         }
+
+        void OnDestroy()
+        {
+            if (controller != null && controller.Host != null)
+                controller.Host.ControlChanged -= UpdateControls;
+        }
+
+        void UpdateControls() => moveButton.SetEnabled(controller.Host.CanControl);
 
         // Nur planen, nicht fahren: zeigt, ob das Ziel erreichbar wäre.
         void UpdatePreview()

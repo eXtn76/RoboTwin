@@ -1,29 +1,62 @@
+using System;
 using RoboTwin.Model;
 using UnityEngine;
 
 namespace RoboTwin.Connection
 {
+    public enum ConnectionMode
+    {
+        Simulation,   // Controller läuft in Unity (SimulatedConnection)
+        Network       // Python-Controller über TCP (TcpConnection)
+    }
+
     /// <summary>
     /// Hält die aktive Roboterverbindung, "tickt" sie jedes Frame im Haupt-Thread und gibt
-    /// empfangene Ist-Zustände an das RobotModel weiter. Die UI holt sich die Verbindung hier –
-    /// und kennt dabei nur das Interface IRobotConnection.
+    /// empfangene Ist-Zustände an das RobotModel weiter. Schaltet zwischen Simulation und Netzwerk um.
+    ///
+    /// Die UI abonniert die Events des HOSTS, nicht die der Verbindung: Der Host leitet sie von der
+    /// jeweils aktiven Verbindung weiter. So muss sich die UI beim Umschalten nicht neu anmelden.
     /// </summary>
     public class RobotConnectionHost : MonoBehaviour
     {
         [SerializeField] RobotModel model;
         [SerializeField] float acceleration = 180f;   // Grad/s², für die Simulation
+
+        [Header("Verbindung")]
+        [SerializeField] ConnectionMode startMode = ConnectionMode.Simulation;
+        [SerializeField] string networkHost = "127.0.0.1";
+        [SerializeField] int networkPort = 5005;
         [SerializeField] bool connectOnStart = true;
 
         public IRobotConnection Connection { get; private set; }
+        public ConnectionMode Mode { get; private set; }
+        public string NetworkHost => networkHost;
+        public int NetworkPort => networkPort;
+
+        public bool IsConnected => Connection.Status == ConnectionStatus.Connected;
+
+        /// <summary>Darf Unity gerade steuern? Verbunden UND Besitzer.</summary>
+        public bool CanControl => IsConnected && Connection.Role == ControlRole.Owner;
+
+        // ---- Weitergeleitete Events der aktiven Verbindung ----
+        public event Action<ConnectionStatus> StatusChanged;
+        public event Action<ControlRole> RoleChanged;
+        public event Action<CommandResult> CommandResultReceived;
+        public event Action<string> Warning;
+
+        /// <summary>Verbindung wurde ausgetauscht (Simulation ↔ Netzwerk, neue Adresse).</summary>
+        public event Action ConnectionSwitched;
+
+        /// <summary>Etwas hat sich geändert, das CanControl/IsConnected beeinflusst (Status, Rolle, Umschalten).</summary>
+        public event Action ControlChanged;
 
         void Reset() => model = GetComponent<RobotModel>();
 
         // Awake statt Start: Die Verbindung muss existieren, bevor irgendein Start() der UI sie abfragt.
-        // Gebraucht werden nur die (serialisierten) Daten der JointDriver – nicht RobotModel.Awake.
         void Awake()
         {
-            Connection = CreateSimulatedConnection();
-            Connection.StateReceived += model.ApplyState;
+            Mode = startMode;
+            Attach(CreateConnection(Mode));
         }
 
         void Start()
@@ -37,22 +70,64 @@ namespace RoboTwin.Connection
 
         void OnDestroy()
         {
-            if (Connection == null)
-                return;
+            if (Connection != null)
+                Detach();   // trennt auch die TCP-Verbindung → der Netzwerk-Thread endet
+        }
+
+        /// <summary>Alte Verbindung trennen, neue erzeugen und verbinden.</summary>
+        public void SwitchTo(ConnectionMode mode, string host, int port)
+        {
+            Mode = mode;
+            networkHost = host;
+            networkPort = port;
+
+            Detach();
+            Attach(CreateConnection(mode));
+            Connection.Connect();
+
+            ConnectionSwitched?.Invoke();
+            ControlChanged?.Invoke();
+        }
+
+        void Attach(IRobotConnection connection)
+        {
+            Connection = connection;
+            connection.StateReceived += model.ApplyState;
+            connection.StatusChanged += OnStatusChanged;
+            connection.RoleChanged += OnRoleChanged;
+            connection.CommandResultReceived += OnCommandResult;
+            connection.Warning += OnWarning;
+        }
+
+        void Detach()
+        {
             Connection.StateReceived -= model.ApplyState;
+            Connection.StatusChanged -= OnStatusChanged;
+            Connection.RoleChanged -= OnRoleChanged;
+            Connection.CommandResultReceived -= OnCommandResult;
+            Connection.Warning -= OnWarning;
             Connection.Disconnect();
         }
 
-        // Test für "ablehnen statt begrenzen": Über Slider und IK kommt man nie über die Grenzen,
-        // also schicken wir hier absichtlich einen ungültigen Befehl (Ellbogen auf 200°).
-        [ContextMenu("Test: Befehl außerhalb der Grenzen senden")]
-        void SendOutOfLimitTestCommand()
+        void OnStatusChanged(ConnectionStatus status)
         {
-            var joints = new float[model.JointCount];
-            joints[2] = 200f;
-            int id = Connection.SendCommand(new MoveJointsCommand(joints));
-            Debug.Log($"Testbefehl #{id} gesendet (Ellbogen 200°) – erwartet: Ablehnung im Panel.");
+            StatusChanged?.Invoke(status);
+            ControlChanged?.Invoke();
         }
+
+        void OnRoleChanged(ControlRole role)
+        {
+            RoleChanged?.Invoke(role);
+            ControlChanged?.Invoke();
+        }
+
+        void OnCommandResult(CommandResult result) => CommandResultReceived?.Invoke(result);
+        void OnWarning(string message) => Warning?.Invoke(message);
+
+        // ---- Verbindungen erzeugen ----
+
+        IRobotConnection CreateConnection(ConnectionMode mode) =>
+            mode == ConnectionMode.Network ? CreateTcpConnection() : CreateSimulatedConnection();
 
         SimulatedConnection CreateSimulatedConnection()
         {
@@ -70,10 +145,39 @@ namespace RoboTwin.Connection
                 maxAngles[i] = joint.MaxAngle;
                 maxSpeeds[i] = joint.MaxSpeed;
                 maxAccelerations[i] = acceleration;
-                startAngles[i] = joint.Angle;
+                startAngles[i] = joint.Angle;   // dort weitermachen, wo der Arm gerade steht
             }
 
             return new SimulatedConnection(minAngles, maxAngles, maxSpeeds, maxAccelerations, startAngles);
+        }
+
+        TcpConnection CreateTcpConnection()
+        {
+            int count = model.JointCount;
+            var names = new string[count];
+            var minAngles = new float[count];
+            var maxAngles = new float[count];
+
+            for (int i = 0; i < count; i++)
+            {
+                JointDriver joint = model.GetJoint(i);
+                names[i] = joint.JointName;
+                minAngles[i] = joint.MinAngle;
+                maxAngles[i] = joint.MaxAngle;
+            }
+
+            return new TcpConnection(networkHost, networkPort, names, minAngles, maxAngles);
+        }
+
+        // Test für "ablehnen statt begrenzen": Über Slider und IK kommt man nie über die Grenzen,
+        // also schicken wir hier absichtlich einen ungültigen Befehl (Ellbogen auf 200°).
+        [ContextMenu("Test: Befehl außerhalb der Grenzen senden")]
+        void SendOutOfLimitTestCommand()
+        {
+            var joints = new float[model.JointCount];
+            joints[2] = 200f;
+            int id = Connection.SendCommand(new MoveJointsCommand(joints));
+            Debug.Log($"Testbefehl #{id} gesendet (Ellbogen 200°) – erwartet: Ablehnung im Panel.");
         }
     }
 }
