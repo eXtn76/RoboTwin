@@ -183,7 +183,7 @@ MonoBehaviour:
   jointName: wrist_1_joint
   minAngle: -360
   maxAngle: 360
-  maxSpeed: 2864.789
+  maxSpeed: 180
   angle: 0
   zeroRotation: {x: 0, y: 0, z: 0, w: 1}
   hasZero: 1
@@ -2004,7 +2004,7 @@ MonoBehaviour:
   jointName: shoulder_pan_joint
   minAngle: -360
   maxAngle: 360
-  maxSpeed: 2864.789
+  maxSpeed: 180
   angle: 0
   zeroRotation: {x: 0, y: 0, z: 0, w: 1}
   hasZero: 1
@@ -2118,7 +2118,7 @@ MonoBehaviour:
   jointName: wrist_2_joint
   minAngle: -360
   maxAngle: 360
-  maxSpeed: 2864.789
+  maxSpeed: 180
   angle: 0
   zeroRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
   hasZero: 1
@@ -2281,7 +2281,7 @@ MonoBehaviour:
   jointName: shoulder_lift_joint
   minAngle: -360
   maxAngle: 360
-  maxSpeed: 2864.789
+  maxSpeed: 180
   angle: 0
   zeroRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
   hasZero: 1
@@ -3637,7 +3637,7 @@ MonoBehaviour:
   jointName: elbow_joint
   minAngle: -180
   maxAngle: 180
-  maxSpeed: 2864.789
+  maxSpeed: 180
   angle: 0
   zeroRotation: {x: 0, y: 0, z: 0, w: 1}
   hasZero: 1
@@ -3841,7 +3841,7 @@ MonoBehaviour:
   jointName: wrist_3_joint
   minAngle: -360
   maxAngle: 360
-  maxSpeed: 2864.789
+  maxSpeed: 180
   angle: 0
   zeroRotation: {x: -0.000000061817246, y: 0, z: 0.7071068, w: 0.7071068}
   hasZero: 1
