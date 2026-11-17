@@ -56,15 +56,30 @@ namespace RoboTwin.Kinematics
         }
 
         /// <summary>TCP-Lage relativ zur Wurzel für die gegebenen Winkel (Grad, URDF-Konvention).</summary>
-        public Frame ForwardKinematics(IReadOnlyList<float> angles)
+        public Frame ForwardKinematics(IReadOnlyList<float> angles) => ForwardKinematics(angles, null, null);
+
+        /// <summary>
+        /// Wie oben, liefert zusätzlich Position und Drehachse jedes Gelenks (relativ zur Wurzel).
+        /// Die Achse zeigt so, dass ein POSITIVER URDF-Winkel eine positive Drehung um sie ist –
+        /// genau das braucht die Jacobi-Matrix.
+        /// </summary>
+        public Frame ForwardKinematics(IReadOnlyList<float> angles, Vector3[] jointPositions, Vector3[] jointAxes)
         {
             Frame frame = baseOffset;
             for (int i = 0; i < jointOffsets.Length; i++)
             {
-                // Erst zum Gelenk (fester Versatz + Grundrotation), dann um die eigene Achse drehen –
-                // genau wie im JointDriver (Minus: URDF rechtshändig → Unity linkshändig).
-                Frame rotation = new Frame(Vector3.zero, Quaternion.AngleAxis(-angles[i], Vector3.up));
-                frame = frame * jointOffsets[i] * rotation;
+                frame = frame * jointOffsets[i];   // jetzt sitzen wir im Gelenk (vor seiner Drehung)
+
+                if (jointPositions != null)
+                {
+                    jointPositions[i] = frame.Position;
+                    // AngleAxis(−θ, up) ist dieselbe Drehung wie AngleAxis(+θ, down).
+                    jointAxes[i] = frame.Rotation * Vector3.down;
+                }
+
+                // Drehung um die eigene Achse – genau wie im JointDriver
+                // (Minus: URDF rechtshändig → Unity linkshändig).
+                frame = frame * new Frame(Vector3.zero, Quaternion.AngleAxis(-angles[i], Vector3.up));
             }
             return frame * toolOffset;
         }
@@ -82,5 +97,17 @@ namespace RoboTwin.Kinematics
             Vector3 u = new Vector3(-robotPointMm.y, robotPointMm.z, robotPointMm.x) / 1000f;   // ROS → Unity-Achsen, mm → m
             return robotBase.TransformPoint(u);
         }
+
+        /// <summary>Richtung im Roboter-Basis-System → Richtung relativ zur Wurzel (Unity-Achsen).</summary>
+        public Vector3 DirectionFromRobotBase(Vector3 robotDirection) =>
+            robotBase.Rotation * new Vector3(-robotDirection.y, robotDirection.z, robotDirection.x);
+
+        /// <summary>
+        /// Werkzeug-Orientierung aus zwei Achsen im Roboter-Basis-System.
+        /// Der Importer bildet URDF-X auf Unity-forward und URDF-Z auf Unity-up ab –
+        /// daher passt LookRotation(forward, up) direkt.
+        /// </summary>
+        public Quaternion ToolRotationFromRobotBase(Vector3 toolX, Vector3 toolZ) =>
+            Quaternion.LookRotation(DirectionFromRobotBase(toolX), DirectionFromRobotBase(toolZ));
     }
 }

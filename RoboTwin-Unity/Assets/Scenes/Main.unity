@@ -2566,6 +2566,7 @@ GameObject:
   - component: {fileID: 1080100585}
   - component: {fileID: 1080100584}
   - component: {fileID: 1080100586}
+  - component: {fileID: 1080100587}
   m_Layer: 0
   m_Name: ur5
   m_TagString: robot
@@ -2662,6 +2663,23 @@ MonoBehaviour:
   model: {fileID: 1080100585}
   tool: {fileID: 1511771289}
   robotBaseFrame: {fileID: 1488928853}
+--- !u!114 &1080100587
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1080100580}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d98cd476eb06f564a839f54c04cb4625, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoboTwin.Kinematics.CartesianController
+  model: {fileID: 1080100585}
+  kinematics: {fileID: 1080100586}
+  simulation: {fileID: 1080100584}
+  testTargetMm: {x: 400, y: -200, z: 300}
+  testOrientation: 0
 --- !u!1 &1088733767
 GameObject:
   m_ObjectHideFlags: 8
