@@ -3,13 +3,14 @@
 Simulierter Robotercontroller in Python 3 (≥ 3.10), nur Standardbibliothek.
 Spricht das Protokoll aus [`docs/PROTOCOL.md`](../docs/PROTOCOL.md).
 
-> In Arbeit (Meilenstein M5). Vorhanden: Bewegungssimulation mit Tests.
+> In Arbeit (Meilenstein M5). Vorhanden: Bewegungssimulation und Roboter mit Tests.
 
 ## Aufbau
 
 | Datei | Inhalt |
 |---|---|
 | `robotwin_controller/motion.py` | synchrones Trapezprofil (Python-Fassung des Unity-`JointMotionSimulator`) |
+| `robotwin_controller/robot.py` | Achsgrenzen aus `ur5.urdf`, Befehle prüfen (ablehnen statt begrenzen) und ausführen |
 | `tests/` | Unit-Tests (`unittest`) |
 
 ## Tests ausführen
