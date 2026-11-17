@@ -6,6 +6,13 @@
     <ui:VisualElement name="joint-panel" class="panel">
         <ui:Label text="Joint-Steuerung" class="panel-title" />
 
+        <!-- Verbindung: Modus, Verbinden/Trennen, Status (ConnectionBar.cs) -->
+        <ui:VisualElement class="row connection-bar">
+            <ui:DropdownField name="connection-mode" class="connection-mode" />
+            <ui:Button name="connect-button" text="Verbinden" class="button" />
+            <ui:Label name="connection-status" text="–" class="connection-status" />
+        </ui:VisualElement>
+
         <ui:VisualElement class="row">
             <ui:Label text="Override (%)" class="row-label" />
             <ui:SliderInt name="override-slider" low-value="1" high-value="100" value="100"
@@ -22,5 +29,8 @@
             <ui:Button name="home-button" text="Home" class="button" />
             <ui:Label name="status-label" text="Status: –" class="status" />
         </ui:VisualElement>
+
+        <!-- Letzte Fehlermeldung des Controllers (ConnectionBar.cs) -->
+        <ui:Label name="error-label" text="" class="message message--error" />
     </ui:VisualElement>
 </ui:UXML>

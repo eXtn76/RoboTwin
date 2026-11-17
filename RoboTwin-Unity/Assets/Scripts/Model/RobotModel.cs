@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using RoboTwin.Connection;
 using UnityEngine;
 
 namespace RoboTwin.Model
 {
     /// <summary>
-    /// Ist-Zustand des Roboters. Nimmt Gelenkwinkel entgegen (egal woher),
+    /// Ist-Zustand des Roboters. Nimmt Zustandsmeldungen entgegen (egal von welcher Verbindung),
     /// zeigt sie über die JointDriver an und meldet Änderungen per Event.
     /// Rechnet selbst KEINE Bewegung.
     /// </summary>
@@ -24,6 +25,12 @@ namespace RoboTwin.Model
         // IReadOnlyList: Andere dürfen lesen, aber nicht hineinschreiben.
         public IReadOnlyList<float> ActualAngles => actualAngles;
 
+        // Weitere Teile der letzten Zustandsmeldung.
+        public RobotStatus Status { get; private set; } = RobotStatus.Idle;
+        public float OverridePercent { get; private set; } = 100f;
+        public double Timestamp { get; private set; }
+        public bool IsMoving => Status == RobotStatus.Moving;
+
         // Beim Hinzufügen im Editor: alle JointDriver darunter einsammeln.
         // Die Hierarchie ist eine Kette, daher stimmt die Reihenfolge automatisch.
         void Reset() => joints = GetComponentsInChildren<JointDriver>();
@@ -36,22 +43,27 @@ namespace RoboTwin.Model
         }
 
         /// <summary>
-        /// Übernimmt einen neuen Ist-Zustand (Winkel in Grad, URDF-Konvention).
+        /// Übernimmt eine Zustandsmeldung des Controllers (Winkel in Grad, URDF-Konvention).
         /// Speichert die Rohwerte – auch wenn der JointDriver die Anzeige auf die
         /// Achsgrenzen begrenzt. Das Modell soll die Meldung des Controllers
         /// unverfälscht widerspiegeln.
         /// </summary>
-        public void ApplyState(float[] angles)
+        public void ApplyState(RobotState state)
         {
-            if (angles.Length != joints.Length)
+            float[] angles = state.Joints;
+            if (angles == null || angles.Length != joints.Length)
                 throw new ArgumentException(
-                    $"Erwartet {joints.Length} Winkel, erhalten {angles.Length}.", nameof(angles));
+                    $"Erwartet {joints.Length} Winkel, erhalten {angles?.Length ?? 0}.", nameof(state));
 
             for (int i = 0; i < joints.Length; i++)
             {
                 actualAngles[i] = angles[i];
                 joints[i].Angle = angles[i];
             }
+
+            Status = state.Status;
+            OverridePercent = state.OverridePercent;
+            Timestamp = state.Timestamp;
 
             // Erst nach der Schleife: Abonnenten sehen nie einen halb aktualisierten Zustand.
             StateChanged?.Invoke();

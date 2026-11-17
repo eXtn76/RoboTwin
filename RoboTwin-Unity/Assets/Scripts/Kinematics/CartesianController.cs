@@ -1,3 +1,4 @@
+using RoboTwin.Connection;
 using RoboTwin.Model;
 using UnityEngine;
 
@@ -10,14 +11,14 @@ namespace RoboTwin.Kinematics
     }
 
     /// <summary>
-    /// Kartesische Steuerung: Zielposition (Roboter-Basis, mm) → IK → Fahrbefehl an die Simulation.
+    /// Kartesische Steuerung: Zielposition (Roboter-Basis, mm) → IK → Fahrbefehl an die Verbindung.
     /// Ist das Ziel unerreichbar, bewegt sich der Roboter NICHT.
     /// </summary>
     public class CartesianController : MonoBehaviour
     {
         [SerializeField] RobotModel model;
         [SerializeField] RobotKinematics kinematics;
-        [SerializeField] LocalRobotSimulation simulation;
+        [SerializeField] RobotConnectionHost host;
 
         [Header("Test ohne UI")]
         [SerializeField] Vector3 testTargetMm = new Vector3(400f, -200f, 300f);
@@ -35,7 +36,7 @@ namespace RoboTwin.Kinematics
         {
             model = GetComponent<RobotModel>();
             kinematics = GetComponent<RobotKinematics>();
-            simulation = GetComponent<LocalRobotSimulation>();
+            host = GetComponent<RobotConnectionHost>();
         }
 
         IkSolver CreateSolver()
@@ -70,14 +71,15 @@ namespace RoboTwin.Kinematics
             Solver.Solve(model.ActualAngles, TargetFrame(targetMm, orientation));
 
         /// <summary>
-        /// Berechnet die IK (Start: aktuelle Ist-Winkel) und fährt bei Erfolg los.
-        /// Gibt false zurück, wenn das Ziel unerreichbar ist – dann bewegt sich nichts.
+        /// Berechnet die IK (Start: aktuelle Ist-Winkel) und sendet bei Erfolg einen Fahrbefehl.
+        /// Gibt false zurück, wenn das Ziel unerreichbar ist – dann wird nichts gesendet.
+        /// (Ob der Controller den Befehl annimmt, meldet die Verbindung separat.)
         /// </summary>
         public bool MoveTo(Vector3 targetMm, ToolOrientation orientation, out IkResult result)
         {
             result = Plan(targetMm, orientation);
             if (result.Success)
-                simulation.SetTargets(result.Angles);
+                host.Connection.SendCommand(new MoveJointsCommand(result.Angles));
             return result.Success;
         }
 

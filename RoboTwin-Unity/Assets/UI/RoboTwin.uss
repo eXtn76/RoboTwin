@@ -124,3 +124,19 @@
 .message--error {
     color: rgb(255, 120, 110);
 }
+
+/* ---- Verbindungszeile ---- */
+
+.connection-bar {
+    margin-bottom: 8px;
+}
+
+.connection-mode {
+    width: 160px;
+    margin-right: 8px;
+}
+
+.connection-status {
+    flex-grow: 1;
+    -unity-text-align: middle-right;
+}
