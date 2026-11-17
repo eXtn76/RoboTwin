@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <!-- Vorlage für EINE Gelenkzeile. Name, Grenzen und Startwert setzt JointPanel.cs. -->
+    <ui:VisualElement class="row joint-row">
+        <ui:Label name="joint-name" text="J? joint" class="row-label" />
+        <ui:Slider name="target-slider" low-value="-360" high-value="360" value="0"
+                   show-input-field="true" class="row-slider" />
+        <ui:Label text="Ist" class="actual-caption" />
+        <ui:Label name="actual-value" text="0.0°" class="actual-value" />
+    </ui:VisualElement>
+</ui:UXML>

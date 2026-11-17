@@ -1,0 +1,87 @@
+/* Gemeinsames Stylesheet für alle RoboTwin-Panels. */
+
+/* Halbtransparenter Kasten oben links über der 3D-Szene. */
+.panel {
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    width: 600px;
+    padding: 12px 16px;
+    background-color: rgba(24, 26, 30, 0.88);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+}
+
+.panel-title {
+    font-size: 16px;
+    -unity-font-style: bold;
+    color: rgb(230, 232, 235);
+    margin-bottom: 8px;
+}
+
+/* Eine Zeile: Elemente nebeneinander, vertikal mittig. */
+.row {
+    flex-direction: row;
+    align-items: center;
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+.row-label {
+    width: 150px;
+    color: rgb(201, 205, 210);
+}
+
+/* Slider füllt den Restplatz der Zeile. */
+.row-slider {
+    flex-grow: 1;
+    margin-left: 8px;
+    margin-right: 8px;
+}
+
+/* Eingabefeld rechts am Slider: feste Breite, damit alle Zeilen fluchten. */
+.row-slider .unity-base-slider__text-field {
+    width: 64px;
+}
+
+#joint-rows {
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.actual-caption {
+    color: rgb(138, 144, 153);
+}
+
+/* Ist-Wert: feste Breite und rechtsbündig, damit die Zahl beim Ändern nicht springt. */
+.actual-value {
+    width: 70px;
+    -unity-text-align: middle-right;
+    color: rgb(127, 209, 255);
+}
+
+.footer {
+    margin-top: 8px;
+}
+
+.button {
+    min-width: 80px;
+    height: 28px;
+}
+
+.button-stop {
+    background-color: rgb(179, 38, 30);
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+}
+
+.button-stop:hover {
+    background-color: rgb(208, 54, 44);
+}
+
+.status {
+    flex-grow: 1;
+    -unity-text-align: middle-right;
+    color: rgb(201, 205, 210);
+}
