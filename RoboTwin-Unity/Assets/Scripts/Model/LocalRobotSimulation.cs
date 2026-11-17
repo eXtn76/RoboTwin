@@ -65,7 +65,15 @@ namespace RoboTwin.Model
             model.ApplyState(angles);
         }
 
-        // Schnittstelle für die UI (nächster Schritt)
+        // ---- Schnittstelle für die UI ----
+
+        /// <summary>Override in Prozent (1 … 100). Update() gibt Änderungen an den Simulator weiter.</summary>
+        public float OverridePercent
+        {
+            get => overridePercent;
+            set => overridePercent = Mathf.Clamp(value, 1f, 100f);
+        }
+
         public int JointCount => simulator.JointCount;
         public float GetTarget(int joint) => simulator.GetTarget(joint);
         public bool IsMoving => simulator != null && simulator.IsMoving;
@@ -73,7 +81,8 @@ namespace RoboTwin.Model
         public void SetTargets(float[] targets) => simulator.SetTargets(targets);
         public void Stop() => simulator.Stop();
 
-        // Rechtsklick auf die Komponente (bzw. ⋮) → diese Einträge, nur im Play-Modus sinnvoll.
+        // ---- Test ohne UI: Rechtsklick auf die Komponente (bzw. ⋮), nur im Play-Modus ----
+
         [ContextMenu("Move to Test Targets")]
         void MoveToTestTargets() => SetTargets(testTargets);
 
