@@ -39,6 +39,9 @@ Siehe [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
   - Override begrenzt nur die Geschwindigkeit, nicht die Beschleunigung (sonst kann der Arm
     bei Override-Reduktion während der Fahrt nicht rechtzeitig bremsen).
   - Beschleunigung (180 °/s²) ist frei gewählt, die URDF enthält keine Werte.
+  - Python-Controller unter Windows: Timer-Auflösung ~15,6 ms, daher schwankt der Abstand
+    zwischen zwei state-Nachrichten (15–31 ms); im Mittel 50 Hz (feste Zielzeitpunkte).
+  - Protokoll ohne Anmeldung/Verschlüsselung: Controller lauscht standardmäßig nur auf 127.0.0.1.
   - URDF-Grenzen vorsichtiger als UR5-Datenblatt: Handgelenke 180 statt 360 °/s,
     Ellbogen ±180° statt ±360°.
 -->
