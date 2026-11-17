@@ -31,6 +31,18 @@ Siehe [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
 
 ## Grenzen
 
+<!-- M8: ausformulieren. Notizen aus der Entwicklung:
+  - Bewegungssimulation (JointMotionSimulator): Ankunft durch diskrete Frames 2–5 % früher
+    als theoretisch; im letzten Frame springt die Geschwindigkeit von wenigen °/s auf 0.
+  - Zielwechsel während der Fahrt: aktuelle Geschwindigkeit wird auf die neue Richtung
+    projiziert; bei Richtungsumkehr (Projektion < 0) bremst die Simulation abrupt auf 0.
+  - Override begrenzt nur die Geschwindigkeit, nicht die Beschleunigung (sonst kann der Arm
+    bei Override-Reduktion während der Fahrt nicht rechtzeitig bremsen).
+  - Beschleunigung (180 °/s²) ist frei gewählt, die URDF enthält keine Werte.
+  - URDF-Grenzen vorsichtiger als UR5-Datenblatt: Handgelenke 180 statt 360 °/s,
+    Ellbogen ±180° statt ±360°.
+-->
+
 <!-- M8 -->
 
 ## Ausblick
