@@ -143,14 +143,29 @@ class HelloAndRolesTests(ServerTestCase):
 
 class StateTests(ServerTestCase):
     async def test_states_arrive_at_about_50_hz_with_increasing_seq(self):
+        """Eine Sekunde lang ALLE Zustände mitlesen und über den ganzen Zeitraum mitteln.
+
+        Nicht "1 s schlafen, dann einen lesen": Während des Schlafens stauen sich die Nachrichten
+        im Empfangspuffer, und man läse den ältesten statt des neuesten. Und nicht über wenige Takte
+        rechnen: Unter Windows haben Timer ~15,6 ms Auflösung, einzelne Abstände schwanken stark –
+        nur der Mittelwert ist 50 Hz.
+        """
         client = await self.connect()
         await client.receive("hello")
-        first = await client.receive("state")
-        await asyncio.sleep(1.0)
-        later = await client.wait_for_state(lambda s: True)
-        rate = (later["seq"] - first["seq"]) / (later["timestamp"] - first["timestamp"])
-        self.assertAlmostEqual(rate, 50, delta=10)
-        self.assertGreater(later["timestamp"], first["timestamp"])
+
+        loop = asyncio.get_running_loop()
+        states = []
+        end = loop.time() + 1.0
+        while loop.time() < end:
+            states.append(await client.receive("state"))
+
+        sequence = [s["seq"] for s in states]
+        self.assertEqual(sequence, list(range(sequence[0], sequence[0] + len(sequence))),
+                         "seq muss lückenlos um 1 steigen")
+
+        rate = (states[-1]["seq"] - states[0]["seq"]) / (states[-1]["timestamp"] - states[0]["timestamp"])
+        self.assertAlmostEqual(rate, 50, delta=5)
+        self.assertGreaterEqual(len(states), 40)   # in 1 s: ~50
 
     async def test_all_clients_receive_states(self):
         a = await self.connect()
