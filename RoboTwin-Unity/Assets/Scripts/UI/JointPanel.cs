@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using RoboTwin.Kinematics;
 using RoboTwin.Model;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -6,18 +7,21 @@ using UnityEngine.UIElements;
 namespace RoboTwin.UI
 {
     /// <summary>
-    /// Bedienpanel für den Joint-Modus: ein Slider pro Gelenk (Soll), Anzeige der Istwerte,
-    /// Override, Stop und Home. Schreibt Sollwerte an die Simulation, liest Istwerte vom Modell.
+    /// Bedienpanel für den Joint-Modus: ein Slider pro Gelenk (Soll), Anzeige der Istwerte
+    /// und der TCP-Position, Override, Stop und Home.
+    /// Schreibt Sollwerte an die Simulation, liest Istwerte vom Modell.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public class JointPanel : MonoBehaviour
     {
         [SerializeField] RobotModel model;
         [SerializeField] LocalRobotSimulation simulation;
+        [SerializeField] RobotKinematics kinematics;
         [SerializeField] VisualTreeAsset jointRowTemplate;
 
         readonly List<Slider> targetSliders = new List<Slider>();
         readonly List<Label> actualLabels = new List<Label>();
+        Label tcpLabel;
         Label statusLabel;
 
         // Start statt OnEnable: Wir lesen beim Aufbau model.ActualAngles, und die füllt
@@ -31,6 +35,7 @@ namespace RoboTwin.UI
 
             root.Q<Button>("stop-button").clicked += OnStopClicked;
             root.Q<Button>("home-button").clicked += OnHomeClicked;
+            tcpLabel = root.Q<Label>("tcp-label");
             statusLabel = root.Q<Label>("status-label");
 
             BuildJointRows(root.Q<VisualElement>("joint-rows"));
@@ -82,6 +87,9 @@ namespace RoboTwin.UI
             IReadOnlyList<float> angles = model.ActualAngles;
             for (int i = 0; i < actualLabels.Count; i++)
                 actualLabels[i].text = $"{angles[i]:F1}°";   // Anzeige: Format der Systemsprache ist hier richtig
+
+            Vector3 tcp = kinematics.CurrentTcpMm();
+            tcpLabel.text = $"TCP   X {tcp.x:F1}   Y {tcp.y:F1}   Z {tcp.z:F1} mm";
 
             statusLabel.text = simulation.IsMoving ? "Status: fährt" : "Status: steht";
         }

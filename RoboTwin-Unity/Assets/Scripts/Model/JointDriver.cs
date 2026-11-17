@@ -24,6 +24,7 @@ namespace RoboTwin.Model
         public float MinAngle => minAngle;
         public float MaxAngle => maxAngle;
         public float MaxSpeed => maxSpeed;
+        public Quaternion ZeroRotation => zeroRotation;
 
         public float Angle
         {

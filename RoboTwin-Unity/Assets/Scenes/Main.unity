@@ -1756,6 +1756,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RoboTwin.UI.JointPanel
   model: {fileID: 1080100585}
   simulation: {fileID: 1080100584}
+  kinematics: {fileID: 1080100586}
   jointRowTemplate: {fileID: 9197481963319205126, guid: e3ed984d22848b046bf4705c787e1c11, type: 3}
 --- !u!114 &574433022
 MonoBehaviour:
@@ -2564,6 +2565,7 @@ GameObject:
   - component: {fileID: 1080100582}
   - component: {fileID: 1080100585}
   - component: {fileID: 1080100584}
+  - component: {fileID: 1080100586}
   m_Layer: 0
   m_Name: ur5
   m_TagString: robot
@@ -2645,6 +2647,21 @@ MonoBehaviour:
   - {fileID: 68216465}
   - {fileID: 1060086033}
   - {fileID: 1843941953}
+--- !u!114 &1080100586
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1080100580}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe19ba18c2f361b4ba04913cc6979295, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoboTwin.Kinematics.RobotKinematics
+  model: {fileID: 1080100585}
+  tool: {fileID: 1511771289}
+  robotBaseFrame: {fileID: 1488928853}
 --- !u!1 &1088733767
 GameObject:
   m_ObjectHideFlags: 8
