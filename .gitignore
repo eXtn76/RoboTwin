@@ -13,3 +13,7 @@ desktop.ini
 .vscode/
 *.swp
 *~
+
+# Python-Bytecode überall im Repo (z. B. tools/)
+__pycache__/
+*.py[cod]
