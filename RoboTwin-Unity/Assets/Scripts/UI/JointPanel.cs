@@ -98,6 +98,16 @@ namespace RoboTwin.UI
         // Erzeugt pro Gelenk eine Zeile aus der Vorlage JointRow.uxml.
         void BuildJointRows(VisualElement container)
         {
+            // Slider-Bereiche: mechanische Grenzen, eingeengt auf die Sicherheitsgrenzen.
+            var minAngles = new float[model.JointCount];
+            var maxAngles = new float[model.JointCount];
+            for (int i = 0; i < model.JointCount; i++)
+            {
+                minAngles[i] = model.GetJoint(i).MinAngle;
+                maxAngles[i] = model.GetJoint(i).MaxAngle;
+            }
+            host.MotionGuard?.RestrictLimits(minAngles, maxAngles);
+
             for (int i = 0; i < model.JointCount; i++)
             {
                 JointDriver joint = model.GetJoint(i);
@@ -112,8 +122,8 @@ namespace RoboTwin.UI
                 Label actualLabel = row.Q<Label>("actual-value");
 
                 nameLabel.text = $"J{i + 1} {joint.JointName.Replace("_joint", "")}";
-                slider.lowValue = joint.MinAngle;
-                slider.highValue = joint.MaxAngle;
+                slider.lowValue = minAngles[i];
+                slider.highValue = maxAngles[i];
                 slider.SetValueWithoutNotify(targets[i]);   // Startwert, ohne einen Befehl auszulösen
 
                 // Lambda-Falle: Das Lambda merkt sich die VARIABLE, nicht ihren Wert.

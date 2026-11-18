@@ -47,9 +47,15 @@ Siehe [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
     (sicher: Controller hält beim Verlust des Besitzers an).
   - Kollisionsprüfung (Kapselmodell): Kapseln liegen auf der kinematischen Kette (Gelenkursprünge);
     die seitlichen Versätze der echten UR-Glieder (Schulter ~13 cm, Ellbogen ~12 cm) sind nur über
-    die Radien abgedeckt. Keine Selbstkollision, kein Werkzeug/Greifer. Hindernisse werden beim
+    die Radien abgedeckt. Kein Werkzeug/Greifer. Hindernisse werden beim
     Start einmal eingelesen (statisch). Geprüft wird nur in Unity – der Python-Controller kennt den
     Tisch nicht; die laufende Überwachung greift nur, solange Unity verbunden ist.
+  - Selbstkollision wird nicht geometrisch geprüft, sondern über Sicherheitsgrenzen der Achsen
+    verhindert (Ellbogen ±145°, Handgelenk 2 ±160°) – wie "Joint Position Limits" bei UR.
+    Begründet per Stichprobe mit den echten Kollisions-Meshes (tools/self_collision_analysis.py):
+    2000 Zufallsstellungen, 0 Selbstkollisionen über der Montageebene. Eine Stichprobe ist kein
+    Beweis; seltene Stellungen können fehlen. Gilt nur für den UR5 – anderes Modell: neu analysieren.
+    Kapseln aus den Meshes (Versuch S1) waren für die T-förmigen UR-Glieder zu ungenau.
   - URDF-Grenzen vorsichtiger als UR5-Datenblatt: Handgelenke 180 statt 360 °/s,
     Ellbogen ±180° statt ±360°.
 -->
@@ -63,4 +69,6 @@ Siehe [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
     ("run_program"), Python spielt es ab und meldet den Fortschritt – läuft dann auch ohne UI weiter.
   - "take_control": Steuerung übernehmen statt Rollen nach Verbindungsreihenfolge (R2 in M6).
   - move_linear: lineare TCP-Bahnen (IK in Python oder Bahn in Unity vorberechnen).
+  - Geometrische Selbstkollision (Kugelbäume oder exakte Meshes), damit die Achsgrenzen
+    weniger vorsichtig sein können; Sicherheitsfunktionen auch im Python-Controller.
 -->

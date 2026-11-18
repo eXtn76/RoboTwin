@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using RoboTwin.Connection;
@@ -10,13 +11,23 @@ namespace RoboTwin.Safety
     /// <summary>
     /// Kollisionsschutz in der Szene:
     /// 1. Vorab-Prüfung – meldet sich beim Host als IMotionGuard an. Jeder Fahrbefehl über host.SendMove()
-    ///    wird geprüft; ist die Bahn nicht frei, wird nicht gesendet.
+    ///    wird geprüft (Sicherheitsgrenzen der Achsen, dann Tisch und Boden); ist er nicht sicher, wird
+    ///    nicht gesendet.
     /// 2. Laufende Überwachung – prüft jeden Ist-Zustand. Gerät der Arm trotzdem in Kollision (z. B. weil der
     ///    Python-Client steuert, der den Tisch nicht kennt), löst Unity den Not-Halt aus.
     /// 3. Gizmos – zeichnet Kapseln und Hindernisse in die Scene-Ansicht (grün frei, rot Kollision).
     /// </summary>
     public class SafetyMonitor : MonoBehaviour, IMotionGuard
     {
+        /// <summary>Sicherheitsgrenze: Gelenk darf nur im Bereich ±Limit fahren (enger als mechanisch möglich).</summary>
+        [Serializable]
+        public class JointSafetyLimit
+        {
+            [Tooltip("Gelenknummer, 1 = Basis … 6 = Handgelenk 3")]
+            public int joint;
+            [Tooltip("Erlaubter Bereich in Grad (±)")]
+            public float limit;
+        }
         [SerializeField] RobotModel model;
         [SerializeField] RobotKinematics kinematics;
         [SerializeField] RobotConnectionHost host;
@@ -25,6 +36,17 @@ namespace RoboTwin.Safety
         [SerializeField] BoxCollider[] obstacles;      // Quader, z. B. Tischplatte und Tischbeine
         [SerializeField] Transform floor;              // Bodenebene (Position + Oberseite)
         [SerializeField] float safetyMargin = 0.01f;   // m, zusätzlich zu den Kapselradien
+
+        // Selbstkollision wird über Achsgrenzen verhindert – wie mit den "Joint Position Limits" in den
+        // Sicherheitseinstellungen echter UR-Steuerungen. Begründung (Stichproben mit den echten Kollisions-Meshes):
+        //   python tools/self_collision_analysis.py --limit elbow_joint=145 --limit wrist_2_joint=160
+        // Ellbogen: erste Selbstkollision bei ±150°. Handgelenk 2: Werkzeug klappt bei ~165–195° auf den Unterarm.
+        [Header("Sicherheitsgrenzen gegen Selbstkollision")]
+        [SerializeField] JointSafetyLimit[] jointLimits =
+        {
+            new JointSafetyLimit { joint = 3, limit = 145f },   // Ellbogen
+            new JointSafetyLimit { joint = 5, limit = 160f },   // Handgelenk 2
+        };
 
         [Header("Überwachung")]
         [SerializeField] bool monitorActualState = true;
@@ -69,11 +91,51 @@ namespace RoboTwin.Safety
 
         public bool CheckMove(IReadOnlyList<float> from, IReadOnlyList<float> to, out string reason)
         {
+            // Zuerst die Sicherheitsgrenzen. Die Bahn ist eine gerade Linie im Gelenkraum – liegt das ZIEL im
+            // erlaubten Bereich (und der Start auch), dann auch jeder Punkt dazwischen. Liegt nur der Start
+            // außerhalb, ist die Fahrt erlaubt: Sie führt zurück in den sicheren Bereich.
+            if (ViolatedLimit(to, 0f, out reason))
+            {
+                reason += " – Selbstkollision droht, nicht gefahren.";
+                return false;
+            }
+
             CollisionHit hit = Checker.CheckPath(from, to);
             reason = hit.Hit
                 ? $"Kollision bei {hit.PathFraction:P0} der Bahn: {hit.Segment} ↔ {hit.Obstacle} – nicht gefahren."
                 : null;
             return !hit.Hit;
+        }
+
+        public void RestrictLimits(float[] minAngles, float[] maxAngles)
+        {
+            foreach (JointSafetyLimit safety in jointLimits)
+            {
+                int i = safety.joint - 1;
+                if (i < 0 || i >= minAngles.Length)
+                    continue;
+                minAngles[i] = Mathf.Max(minAngles[i], -safety.limit);
+                maxAngles[i] = Mathf.Min(maxAngles[i], safety.limit);
+            }
+        }
+
+        // Liegt ein Winkel außerhalb einer Sicherheitsgrenze (plus Toleranz)?
+        bool ViolatedLimit(IReadOnlyList<float> angles, float tolerance, out string reason)
+        {
+            foreach (JointSafetyLimit safety in jointLimits)
+            {
+                int i = safety.joint - 1;
+                if (i < 0 || i >= angles.Count)
+                    continue;
+                if (Mathf.Abs(angles[i]) > safety.limit + tolerance)
+                {
+                    string name = model.GetJoint(i).JointName.Replace("_joint", "");
+                    reason = $"Sicherheitsgrenze: Gelenk {safety.joint} ({name}) bei {angles[i]:F1}°, erlaubt ±{safety.limit:F0}°";
+                    return true;
+                }
+            }
+            reason = null;
+            return false;
         }
 
         // ---- 2. Laufende Überwachung ----
@@ -84,16 +146,19 @@ namespace RoboTwin.Safety
                 return;
 
             currentHit = Checker.CheckPose(model.ActualAngles);
-            bool colliding = currentHit.Hit;
+            // 0,5° Toleranz: Rundung der Zustandsmeldungen soll keinen Not-Halt auslösen.
+            bool limitViolated = ViolatedLimit(model.ActualAngles, 0.5f, out string limitReason);
+            bool unsafeNow = currentHit.Hit || limitViolated;
 
-            // Nur beim ÜBERGANG frei → Kollision auslösen. Steht der Arm nach dem Quittieren noch in Kollision,
+            // Nur beim ÜBERGANG sicher → unsicher auslösen. Steht der Arm nach dem Quittieren noch so,
             // würde er sonst sofort wieder gesperrt – und könnte nie herausfahren.
-            if (colliding && !wasColliding && host.IsConnected && model.Status != RobotStatus.Error)
+            if (unsafeNow && !wasColliding && host.IsConnected && model.Status != RobotStatus.Error)
             {
                 host.Connection.SendCommand(new EmergencyStopCommand());   // darf auch ein Beobachter
-                host.ReportWarning($"Kollision erkannt: {currentHit.Segment} ↔ {currentHit.Obstacle} – Not-Halt ausgelöst.");
+                string cause = currentHit.Hit ? $"Kollision erkannt: {currentHit.Segment} ↔ {currentHit.Obstacle}" : limitReason;
+                host.ReportWarning($"{cause} – Not-Halt ausgelöst.");
             }
-            wasColliding = colliding;
+            wasColliding = unsafeNow;
         }
 
         // ---- Aufbau ----

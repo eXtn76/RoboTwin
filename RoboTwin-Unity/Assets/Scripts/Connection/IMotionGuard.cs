@@ -11,5 +11,11 @@ namespace RoboTwin.Connection
     {
         /// <summary>true = Bahn von 'from' nach 'to' ist frei; sonst false und 'reason' beschreibt das Problem.</summary>
         bool CheckMove(IReadOnlyList<float> from, IReadOnlyList<float> to, out string reason);
+
+        /// <summary>
+        /// Engt Achsbereiche auf die Sicherheitsgrenzen ein (z. B. für IK und Slider), damit gar nicht erst
+        /// Ziele entstehen, die CheckMove ablehnen würde. Die Arrays werden direkt verändert.
+        /// </summary>
+        void RestrictLimits(float[] minAngles, float[] maxAngles);
     }
 }

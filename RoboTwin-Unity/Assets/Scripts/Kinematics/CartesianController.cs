@@ -52,6 +52,9 @@ namespace RoboTwin.Kinematics
                 minAngles[i] = model.GetJoint(i).MinAngle;
                 maxAngles[i] = model.GetJoint(i).MaxAngle;
             }
+            // Sicherheitsgrenzen (z. B. Ellbogen ±145°) gleich in die IK geben – sonst schlägt sie Lösungen vor,
+            // die beim Senden abgelehnt würden.
+            host.MotionGuard?.RestrictLimits(minAngles, maxAngles);
             return new IkSolver(kinematics.Chain, minAngles, maxAngles);
         }
 
