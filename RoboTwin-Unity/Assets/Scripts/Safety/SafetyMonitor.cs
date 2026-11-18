@@ -65,8 +65,9 @@ namespace RoboTwin.Safety
             kinematics = GetComponent<RobotKinematics>();
             host = GetComponent<RobotConnectionHost>();
 
-            // Vorschlag: alle Quader-Kollider der Szene, die nicht zum Roboter selbst gehören (Tisch, Beine …).
-            obstacles = FindObjectsByType<BoxCollider>(FindObjectsSortMode.None)
+            // Vorschlag: alle aktiven Quader-Kollider der Szene, die nicht zum Roboter selbst gehören (Tisch, Beine …).
+            // (Unity 6.6: Die Variante mit FindObjectsSortMode ist abgekündigt – eine Sortierung brauchen wir nicht.)
+            obstacles = FindObjectsByType<BoxCollider>(FindObjectsInactive.Exclude)
                 .Where(c => !c.transform.IsChildOf(transform))
                 .ToArray();
             GameObject floorObject = GameObject.Find("Floor");
