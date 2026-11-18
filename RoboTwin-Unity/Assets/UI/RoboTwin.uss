@@ -304,3 +304,13 @@
     background-color: rgba(24, 26, 30, 0.7);
     border-radius: 4px;
 }
+
+/* Pfeil des Foldouts: Das Standard-Theme färbt ihn dunkelgrau – auf dem dunklen Panel kaum sichtbar.
+   Der Pfeil ist ein Bild, daher Tönung statt Textfarbe. */
+.panel-foldout .unity-foldout__checkmark {
+    -unity-background-image-tint-color: rgb(230, 232, 235);
+}
+
+.panel-foldout .unity-foldout__toggle:hover .unity-foldout__checkmark {
+    -unity-background-image-tint-color: rgb(127, 209, 255);
+}
