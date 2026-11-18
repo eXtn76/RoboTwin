@@ -195,19 +195,25 @@
 
 /* ---- Programm-Panel ---- */
 
-/* Rechte Spalte, unter dem Kartesisch-Panel. */
+/* Rechte Spalte, UNTEN verankert: wächst nach oben und kann so das Kartesisch-Panel
+   (oben rechts) nicht überdecken. Beide sind eigene UI Documents und wissen nichts voneinander. */
 .panel--program {
-    top: 300px;
-    width: 470px;
+    top: auto;
+    bottom: 16px;
+    width: 480px;
+}
+
+.program-hint {
+    color: rgb(138, 144, 153);
+    font-size: 11px;
+    margin-top: 4px;
+    margin-bottom: 2px;
 }
 
 .point-list {
+    min-height: 60px;
     max-height: 230px;
     margin-bottom: 6px;
-}
-
-.program-header > Label {
-    color: rgb(138, 144, 153);
 }
 
 .point-index {
@@ -217,26 +223,16 @@
 
 .point-name {
     flex-grow: 1;
-}
-
-.point-name-header {
-    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
 }
 
 .point-speed {
     width: 50px;
 }
 
-.point-speed-header {
-    width: 64px;
-}
-
 .point-wait {
-    width: 46px;
-}
-
-.point-wait-header {
-    width: 136px;
+    width: 50px;
 }
 
 .unit {
@@ -256,13 +252,22 @@
     border-radius: 4px;
 }
 
+/* Dateiauswahl darf schrumpfen, damit beide Buttons daneben Platz haben. */
 .file-select {
     flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
 }
 
 .file-select > .unity-base-field__label {
     min-width: 40px;
     color: rgb(201, 205, 210);
+}
+
+.button--small {
+    min-width: 0;
+    padding-left: 8px;
+    padding-right: 8px;
 }
 
 .loop-toggle {

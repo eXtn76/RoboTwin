@@ -8,12 +8,9 @@
 
         <ui:TextField name="program-name" label="Name" class="coord-field" />
 
-        <ui:VisualElement class="row program-header">
-            <ui:Label text="#" class="point-index" />
-            <ui:Label text="Punkt" class="point-name-header" />
-            <ui:Label text="Speed" class="point-speed-header" />
-            <ui:Label text="Warten" class="point-wait-header" />
-        </ui:VisualElement>
+        <!-- Erklärung statt Spaltenüberschriften: Überschriften müssten pixelgenau über Feldern
+             mit eigenen Innenabständen stehen – das bricht leicht. -->
+        <ui:Label text="Name · Speed % · Wartezeit s · -&gt; anfahren · ^ v verschieben · x löschen" class="program-hint" />
         <ui:ScrollView name="point-list" class="point-list" />
 
         <ui:VisualElement class="row">
@@ -23,8 +20,8 @@
 
         <ui:VisualElement class="row">
             <ui:DropdownField name="file-select" label="Datei" class="file-select" />
-            <ui:Button name="load-button" text="Laden" class="button" />
-            <ui:Button name="save-button" text="Speichern" class="button" />
+            <ui:Button name="load-button" text="Laden" class="button button--small" />
+            <ui:Button name="save-button" text="Speichern" class="button button--small" />
         </ui:VisualElement>
 
         <ui:VisualElement class="row footer">
