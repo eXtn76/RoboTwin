@@ -86,9 +86,8 @@
 }
 
 .status {
-    flex-grow: 1;
-    -unity-text-align: middle-right;
     color: rgb(201, 205, 210);
+    margin-bottom: 6px;
 }
 
 /* ---- Kartesisch-Panel ---- */
@@ -277,4 +276,31 @@
 .loop-toggle > .unity-base-field__label {
     min-width: 80px;
     color: rgb(201, 205, 210);
+}
+
+/* ---- Einklappbare Bereiche (Foldout) ---- */
+
+/* Überschrift des Foldouts sieht aus wie ein Panel-Titel. */
+.panel-foldout .unity-foldout__text {
+    font-size: 16px;
+    -unity-font-style: bold;
+    color: rgb(230, 232, 235);
+}
+
+/* Inhalt nicht einrücken (Standard sind 15 px). */
+.panel-foldout > .unity-foldout__content {
+    margin-left: 0;
+}
+
+/* ---- Bedienhinweis unten links ---- */
+
+.controls-hint {
+    position: absolute;
+    left: 16px;
+    bottom: 12px;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: rgb(230, 232, 235);
+    background-color: rgba(24, 26, 30, 0.7);
+    border-radius: 4px;
 }

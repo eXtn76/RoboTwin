@@ -1,10 +1,11 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
     <Style src="RoboTwin.uss" />
 
-    <!-- Bedienpanel für den Joint-Modus. Die Gelenkzeilen erzeugt JointPanel.cs
-         zur Laufzeit aus JointRow.uxml und hängt sie in "joint-rows" ein. -->
+    <!-- Linkes Panel: Verbindung, Sicherheit und Joint-Steuerung.
+         Verbindung, Not-Halt, Status und Meldungen stehen AUSSERHALB des Foldouts – sie bleiben
+         sichtbar, auch wenn die Steuerung eingeklappt ist. Einen Not-Halt darf man nie verstecken können. -->
     <ui:VisualElement name="joint-panel" class="panel">
-        <ui:Label text="Joint-Steuerung" class="panel-title" />
+        <ui:Label text="RoboTwin" class="panel-title" />
 
         <!-- Verbindung: Modus, Verbinden/Trennen, Status (ConnectionBar.cs) -->
         <ui:VisualElement class="row connection-bar">
@@ -26,25 +27,34 @@
             <ui:Button name="emergency-stop-button" text="NOT-HALT  (Esc)" class="button button-emergency" />
             <ui:Button name="reset-button" text="Quittieren" class="button" />
         </ui:VisualElement>
+        <ui:Label name="status-label" text="Status: –" class="status" />
 
-        <ui:VisualElement class="row">
-            <ui:Label text="Override (%)" class="row-label" />
-            <ui:SliderInt name="override-slider" low-value="1" high-value="100" value="100"
-                          show-input-field="true" class="row-slider" />
-        </ui:VisualElement>
+        <!-- Einklappbar: die eigentliche Joint-Steuerung. Die Gelenkzeilen erzeugt JointPanel.cs
+             zur Laufzeit aus JointRow.uxml und hängt sie in "joint-rows" ein. -->
+        <ui:Foldout text="Joint-Steuerung" value="true" class="panel-foldout">
+            <ui:VisualElement class="row">
+                <ui:Label text="Override (%)" class="row-label" />
+                <ui:SliderInt name="override-slider" low-value="1" high-value="100" value="100"
+                              show-input-field="true" class="row-slider" />
+            </ui:VisualElement>
 
-        <ui:VisualElement name="joint-rows" />
+            <ui:VisualElement name="joint-rows" />
 
-        <!-- TCP-Position im Roboter-Basis-System (mm), berechnet per Vorwärtskinematik. -->
-        <ui:Label name="tcp-label" text="TCP: –" class="tcp" />
+            <!-- TCP-Position im Roboter-Basis-System (mm), berechnet per Vorwärtskinematik. -->
+            <ui:Label name="tcp-label" text="TCP: –" class="tcp" />
 
-        <ui:VisualElement class="row footer">
-            <ui:Button name="stop-button" text="Stop" class="button button-stop" />
-            <ui:Button name="home-button" text="Home" class="button" />
-            <ui:Label name="status-label" text="Status: –" class="status" />
-        </ui:VisualElement>
+            <ui:VisualElement class="row footer">
+                <ui:Button name="stop-button" text="Stop" class="button button-stop" />
+                <ui:Button name="home-button" text="Home" class="button" />
+            </ui:VisualElement>
+        </ui:Foldout>
 
         <!-- Letzte Fehlermeldung des Controllers (ConnectionBar.cs) -->
         <ui:Label name="error-label" text="" class="message message--error" />
     </ui:VisualElement>
+
+    <!-- Bedienhinweis unten links, außerhalb der Panels. -->
+    <ui:Label name="controls-hint"
+              text="Kamera: rechte Maustaste ziehen = drehen · Mausrad = Zoom     Esc = NOT-HALT"
+              class="controls-hint" />
 </ui:UXML>

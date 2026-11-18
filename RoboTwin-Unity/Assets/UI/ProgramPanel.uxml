@@ -4,8 +4,7 @@
     <!-- Programme (Teach-Pendant-Prinzip): Positionen speichern, Liste bearbeiten, abspielen,
          als JSON speichern/laden. Die Punktzeilen erzeugt ProgramPanel.cs aus ProgramRow.uxml. -->
     <ui:VisualElement name="program-panel" class="panel panel--right panel--program">
-        <ui:Label text="Programm" class="panel-title" />
-
+        <ui:Foldout text="Programm" value="true" class="panel-foldout">
         <ui:TextField name="program-name" label="Name" class="coord-field" />
 
         <!-- Erklärung statt Spaltenüberschriften: Überschriften müssten pixelgenau über Feldern
@@ -30,7 +29,9 @@
             <ui:Button name="program-stop-button" text="Stop" class="button" />
             <ui:Toggle name="loop-toggle" label="Wiederholen" class="loop-toggle" />
         </ui:VisualElement>
+        </ui:Foldout>
 
+        <!-- Meldung außerhalb des Foldouts: Ein laufendes Programm zeigt seinen Fortschritt auch eingeklappt. -->
         <ui:Label name="program-message" text="" class="message" />
     </ui:VisualElement>
 </ui:UXML>
