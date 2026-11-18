@@ -131,8 +131,13 @@ namespace RoboTwin.UI
         }
 
         // Ein Befehl mit ALLEN Sollwerten – auch wenn nur ein Slider bewegt wurde.
-        // MoveJointsCommand kopiert das Array, wir dürfen 'targets' danach weiter verändern.
-        void SendTargets() => Connection.SendCommand(new MoveJointsCommand(targets));
+        // SendMove prüft vorher die Bahn auf Kollision. Ist sie blockiert, springen die Slider zurück
+        // auf den Ist-Zustand, damit sie nichts anzeigen, was der Roboter nicht tut.
+        void SendTargets()
+        {
+            if (host.SendMove(targets) == 0)
+                SyncTargetsToActual();
+        }
 
         // Wird jedes Mal aufgerufen, wenn das Modell einen neuen Ist-Zustand übernommen hat.
         void OnStateChanged()
@@ -202,8 +207,8 @@ namespace RoboTwin.UI
         void OnHomeClicked()
         {
             Array.Clear(targets, 0, targets.Length);   // alle Sollwerte auf 0°
-            SendTargets();                              // ein Befehl → eine gemeinsame, synchrone Bahn
             SyncSliders();
+            SendTargets();                              // ein Befehl → eine gemeinsame, synchrone Bahn
         }
 
         void SyncTargetsToActual()

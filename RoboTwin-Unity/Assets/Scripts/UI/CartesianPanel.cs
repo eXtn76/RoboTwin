@@ -82,11 +82,13 @@ namespace RoboTwin.UI
 
         void OnMoveClicked()
         {
-            bool success = controller.MoveTo(TargetMm, Orientation, out IkResult result);
-            marker.Show(kinematics.RobotBaseToWorld(TargetMm), success);
+            bool sent = controller.MoveTo(TargetMm, Orientation, out IkResult result, out string blockedReason);
+            marker.Show(kinematics.RobotBaseToWorld(TargetMm), sent);
 
-            if (success)
+            if (sent)
                 ShowMessage($"Fahre zum Ziel (IK: {result.Iterations} Iterationen).", true);
+            else if (blockedReason != null)
+                ShowMessage(blockedReason, false);   // erreichbar, aber die Bahn kollidiert
             else
                 ShowMessage($"Nicht gefahren – Ziel unerreichbar (Restfehler {result.PositionErrorMm:F1} mm).", false);
         }

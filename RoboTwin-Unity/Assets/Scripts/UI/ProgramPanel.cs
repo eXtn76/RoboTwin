@@ -148,7 +148,7 @@ namespace RoboTwin.UI
                 });
 
                 Button gotoButton = row.Q<Button>("point-goto");
-                gotoButton.clicked += () => host.Connection.SendCommand(new MoveJointsCommand(point.Joints, point.Speed));
+                gotoButton.clicked += () => host.SendMove(point.Joints, point.Speed);   // mit Kollisionsprüfung
                 gotoButtons.Add(gotoButton);
 
                 row.Q<Button>("point-up").clicked += () => MovePoint(index, -1);

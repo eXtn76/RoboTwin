@@ -75,22 +75,25 @@ namespace RoboTwin.Kinematics
 
         /// <summary>
         /// Berechnet die IK (Start: aktuelle Ist-Winkel) und sendet bei Erfolg einen Fahrbefehl.
-        /// Gibt false zurück, wenn das Ziel unerreichbar ist – dann wird nichts gesendet.
-        /// (Ob der Controller den Befehl annimmt, meldet die Verbindung separat.)
+        /// Gibt false zurück, wenn nicht gesendet wurde: Ziel unerreichbar (result.Success == false)
+        /// oder Bahn blockiert (blockedReason gesetzt). Ob der Controller annimmt, meldet die Verbindung separat.
         /// </summary>
-        public bool MoveTo(Vector3 targetMm, ToolOrientation orientation, out IkResult result)
+        public bool MoveTo(Vector3 targetMm, ToolOrientation orientation, out IkResult result, out string blockedReason)
         {
+            blockedReason = null;
             result = Plan(targetMm, orientation);
-            if (result.Success)
-                host.Connection.SendCommand(new MoveJointsCommand(result.Angles));
-            return result.Success;
+            if (!result.Success)
+                return false;
+            return host.SendMove(result.Angles, 1f, out blockedReason) != 0;
         }
 
         [ContextMenu("Move to Test Target")]
         void MoveToTestTarget()
         {
-            if (MoveTo(testTargetMm, testOrientation, out IkResult r))
+            if (MoveTo(testTargetMm, testOrientation, out IkResult r, out string blocked))
                 Debug.Log($"IK erfolgreich nach {r.Iterations} Iterationen, Restfehler {r.PositionErrorMm:F2} mm.");
+            else if (blocked != null)
+                Debug.LogWarning(blocked);
             else
                 Debug.LogWarning($"Ziel unerreichbar: Restfehler {r.PositionErrorMm:F1} mm / {r.OrientationErrorDeg:F1}°.");
         }

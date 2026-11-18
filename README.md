@@ -45,6 +45,11 @@ Siehe [`docs/PROTOCOL.md`](docs/PROTOCOL.md).
   - Not-Halt ist Stopp-Kategorie 0 (sofort stehen); echte Roboter bremsen oft kontrolliert (Kat. 1).
   - Programme laufen in Unity (ProgramRunner) – trennt sich Unity, endet das Programm
     (sicher: Controller hält beim Verlust des Besitzers an).
+  - Kollisionsprüfung (Kapselmodell): Kapseln liegen auf der kinematischen Kette (Gelenkursprünge);
+    die seitlichen Versätze der echten UR-Glieder (Schulter ~13 cm, Ellbogen ~12 cm) sind nur über
+    die Radien abgedeckt. Keine Selbstkollision, kein Werkzeug/Greifer. Hindernisse werden beim
+    Start einmal eingelesen (statisch). Geprüft wird nur in Unity – der Python-Controller kennt den
+    Tisch nicht; die laufende Überwachung greift nur, solange Unity verbunden ist.
   - URDF-Grenzen vorsichtiger als UR5-Datenblatt: Handgelenke 180 statt 360 °/s,
     Ellbogen ±180° statt ±360°.
 -->

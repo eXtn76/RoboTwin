@@ -18,7 +18,8 @@ namespace RoboTwin.Programs
     /// Running durchläuft pro Punkt zwei Phasen:
     ///   Moving  – move_joints gesendet, warten bis der Roboter steht UND am Punkt ist,
     ///   Waiting – die Wartezeit des Punkts abwarten, dann der nächste Punkt.
-    /// Bricht ab bei: abgelehntem Befehl, Not-Halt, Verlust von Verbindung oder Steuerung, Zeitüberschreitung.
+    /// Bricht ab bei: kollidierender Bahn, abgelehntem Befehl, Not-Halt, Verlust von Verbindung oder Steuerung,
+    /// Zeitüberschreitung.
     /// Funktioniert gleich in Simulation und Netzwerk – es spricht nur mit IRobotConnection.
     /// </summary>
     public class ProgramRunner : MonoBehaviour
@@ -163,7 +164,12 @@ namespace RoboTwin.Programs
             ProgramPoint point = Program.Points[CurrentIndex];
             phase = Phase.Moving;
             phaseDeadline = Time.time + MoveTimeoutSeconds;
-            pendingCommandId = host.Connection.SendCommand(new MoveJointsCommand(point.Joints, point.Speed));
+            pendingCommandId = host.SendMove(point.Joints, point.Speed, out string blockedReason);
+            if (pendingCommandId == 0)
+            {
+                Finish($"Abgebrochen: Punkt {CurrentIndex + 1} ({point.Name}) – {blockedReason}");
+                return;
+            }
             SetMessage($"Punkt {CurrentIndex + 1}/{Program.Points.Count}: {point.Name}");
         }
 

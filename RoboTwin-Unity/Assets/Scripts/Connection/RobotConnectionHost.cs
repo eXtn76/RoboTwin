@@ -43,6 +43,9 @@ namespace RoboTwin.Connection
 
         RobotStatus lastRobotStatus;
 
+        /// <summary>Prüft Fahrbefehle vor dem Senden (die Kollisionsprüfung meldet sich hier an). Darf null sein.</summary>
+        public IMotionGuard MotionGuard { get; set; }
+
         // ---- Weitergeleitete Events der aktiven Verbindung ----
         public event Action<ConnectionStatus> StatusChanged;
         public event Action<ControlRole> RoleChanged;
@@ -139,6 +142,27 @@ namespace RoboTwin.Connection
             RoleChanged?.Invoke(role);
             ControlChanged?.Invoke();
         }
+
+        /// <summary>
+        /// Fahrbefehl senden – vorher prüft der MotionGuard die Bahn vom Ist-Zustand zum Ziel.
+        /// Gibt die Befehls-Id zurück, oder 0, wenn die Bahn blockiert ist (dann steht der Grund in blockedReason
+        /// und zusätzlich als Warnung in der Oberfläche).
+        /// </summary>
+        public int SendMove(float[] joints, float speed, out string blockedReason)
+        {
+            if (MotionGuard != null && !MotionGuard.CheckMove(model.ActualAngles, joints, out blockedReason))
+            {
+                ReportWarning(blockedReason);
+                return 0;
+            }
+            blockedReason = null;
+            return Connection.SendCommand(new MoveJointsCommand(joints, speed));
+        }
+
+        public int SendMove(float[] joints, float speed = 1f) => SendMove(joints, speed, out _);
+
+        /// <summary>Eine Warnung in der Oberfläche anzeigen (z. B. von der Kollisionsprüfung).</summary>
+        public void ReportWarning(string message) => Warning?.Invoke(message);
 
         void OnCommandResult(CommandResult result) => CommandResultReceived?.Invoke(result);
         void OnWarning(string message) => Warning?.Invoke(message);
