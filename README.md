@@ -14,7 +14,7 @@ Das Projekt zeigt, wie sich Game-Engine-Technologie für Robotik und Automatisie
 ## Funktionen
 
 - **Joint-Modus:** Achsen einzeln per Slider; alle Gelenke starten und stoppen gemeinsam
-  (synchrone Bewegung) mit Trapezprofil – beschleunigen, fahren, bremsen. Geschwindigkeits-Override.
+  (synchrone Bewegung) mit Trapezprofil. Beschleunigen, fahren, bremsen. Geschwindigkeits-Override.
 - **Kartesischer Modus:** Zielposition X/Y/Z im Basis-System des Roboters eingeben; eigene inverse
   Kinematik (Damped Least Squares) mit Werkzeugorientierung „nach unten“ oder „beibehalten“.
   Zielmarker zeigt vorab grün/rot, ob das Ziel erreichbar ist.
@@ -46,7 +46,7 @@ git clone https://github.com/eXtn76/RoboTwin.git
 
 **2. Unity-Projekt öffnen:** Unity Hub → *Add* → *Add project from disk* → Ordner
 `RoboTwin/RoboTwin-Unity` wählen und öffnen. Beim ersten Öffnen lädt Unity die Pakete
-(u. a. URDF Importer, Newtonsoft Json) – das braucht Internet und einige Minuten.
+(u. a. URDF Importer, Newtonsoft Json). Dies benötigt eine Internetverbindung sowie einige Minuten Zeit.
 
 **3. Szene starten:** Im Project-Fenster `Assets/Scenes/Main.unity` öffnen, **Play** drücken.
 Der Roboter läuft jetzt in der Simulation – zum Ausprobieren: Panel *Programm* →
