@@ -2830,6 +2830,7 @@ GameObject:
   - component: {fileID: 1080100587}
   - component: {fileID: 1080100588}
   - component: {fileID: 1080100589}
+  - component: {fileID: 1080100590}
   m_Layer: 0
   m_Name: ur5
   m_TagString: robot
@@ -2953,6 +2954,31 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RoboTwin.Programs.ProgramRunner
   model: {fileID: 1080100585}
   host: {fileID: 1080100588}
+--- !u!114 &1080100590
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1080100580}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87a3ea25cfedb2d4ea171cdaca83d60d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoboTwin.Safety.SafetyMonitor
+  model: {fileID: 1080100585}
+  kinematics: {fileID: 1080100586}
+  host: {fileID: 1080100588}
+  obstacles:
+  - {fileID: 185995792}
+  - {fileID: 877129668}
+  - {fileID: 1182487097}
+  - {fileID: 1789269408}
+  - {fileID: 472624843}
+  floor: {fileID: 1987340034}
+  safetyMargin: 0.01
+  monitorActualState: 1
+  drawGizmos: 1
 --- !u!1 &1088733767
 GameObject:
   m_ObjectHideFlags: 8
@@ -3200,7 +3226,7 @@ GameObject:
   - component: {fileID: 1182487098}
   - component: {fileID: 1182487097}
   m_Layer: 0
-  m_Name: Top
+  m_Name: Tischplatte
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
