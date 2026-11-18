@@ -441,6 +441,78 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 580db437d72660648b13c24b6eac2631, type: 3}
   m_PrefabInstance: {fileID: 134664537}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &156425696
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 156425699}
+  - component: {fileID: 156425698}
+  - component: {fileID: 156425697}
+  m_Layer: 5
+  m_Name: ProgramUI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &156425697
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 156425696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 606035cb8e03b184e81cd685a79681d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoboTwin.UI.ProgramPanel
+  model: {fileID: 1080100585}
+  host: {fileID: 1080100588}
+  runner: {fileID: 1080100589}
+  pointRowTemplate: {fileID: 9197481963319205126, guid: 913d45a9a27ad464e9f68fa81d43a74a, type: 3}
+--- !u!114 &156425698
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 156425696}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: 3f1574ace7a9a0e4b97171ab0fe6d9ee, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: 44b55b30b3ba43f42b88bd76f133bacc, type: 3}
+  m_SortingOrder: 0
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
+--- !u!4 &156425699
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 156425696}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &157308271
 GameObject:
   m_ObjectHideFlags: 0
@@ -2757,6 +2829,7 @@ GameObject:
   - component: {fileID: 1080100586}
   - component: {fileID: 1080100587}
   - component: {fileID: 1080100588}
+  - component: {fileID: 1080100589}
   m_Layer: 0
   m_Name: ur5
   m_TagString: robot
@@ -2862,7 +2935,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RoboTwin.Connection.RobotConnectionHost
   model: {fileID: 1080100585}
   acceleration: 180
+  startMode: 0
+  networkHost: 127.0.0.1
+  networkPort: 5005
   connectOnStart: 1
+--- !u!114 &1080100589
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1080100580}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ab3240b894178945871bd488fb3a51f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoboTwin.Programs.ProgramRunner
+  model: {fileID: 1080100585}
+  host: {fileID: 1080100588}
 --- !u!1 &1088733767
 GameObject:
   m_ObjectHideFlags: 8
@@ -5561,3 +5651,4 @@ SceneRoots:
   - {fileID: 870755977}
   - {fileID: 574433023}
   - {fileID: 157308274}
+  - {fileID: 156425699}
