@@ -12,7 +12,7 @@ namespace RoboTwin.Model
         [SerializeField] string jointName = "";
         [SerializeField] float minAngle = -360f;
         [SerializeField] float maxAngle = 360f;
-        [SerializeField] float maxSpeed = 180f;   // Grad pro Sekunde, wird ab M2 genutzt
+        [SerializeField] float maxSpeed = 180f;   // Grad pro Sekunde (aus der URDF)
         [SerializeField, Range(-360f, 360f)] float angle;
 
         // Grundrotation des Gelenks bei 0°, wird gespeichert (SerializeField),

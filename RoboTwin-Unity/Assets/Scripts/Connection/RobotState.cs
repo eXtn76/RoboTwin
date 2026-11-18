@@ -25,7 +25,7 @@ namespace RoboTwin.Connection
     }
 
     /// <summary>
-    /// Ist-Zustand, wie ihn der Controller meldet. Vorlage für die spätere "state"-Nachricht.
+    /// Ist-Zustand, wie ihn der Controller meldet. Entspricht der "state"-Nachricht im Protokoll.
     /// Alle Winkel in Grad, URDF-Konvention.
     /// </summary>
     public readonly struct RobotState

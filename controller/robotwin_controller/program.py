@@ -1,7 +1,7 @@
 """Programmdateien lesen und prüfen – siehe docs/PROGRAM_FORMAT.md.
 
-Wird derzeit nur von den Tests benutzt (Unity spielt Programme ab). Für den Ausblick
-"Programm im Controller ausführen" könnte der Controller damit Programme direkt laden.
+Unity spielt Programme ab; hier werden Programmdateien geprüft (siehe Tests). Ein Abspielen
+im Controller selbst (siehe Ausblick im README) könnte darauf aufbauen.
 """
 
 from __future__ import annotations

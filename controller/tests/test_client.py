@@ -1,7 +1,7 @@
 """Ende-zu-Ende-Test: Der Test-Client (client.py) spielt seine Demo gegen einen echten Controller ab.
 
 client.py kennt nur das Protokoll, nicht den Controller-Code. Läuft die Demo durch, passen
-Client und Controller über das Protokoll zusammen – genau das muss später auch Unity leisten.
+Client und Controller über das Protokoll zusammen – so wie Unitys TcpConnection.
 
 Ausführen im Ordner controller/:   python -m unittest
 """

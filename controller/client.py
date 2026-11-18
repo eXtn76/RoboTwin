@@ -1,7 +1,7 @@
 """Test-Client für den RoboTwin-Controller: fährt den Roboter ohne Unity.
 
 Kennt NUR das Protokoll (docs/PROTOCOL.md) – kein Code aus robotwin_controller.
-So sieht jeder fremde Client aus, z. B. später die TcpConnection in Unity.
+So sieht jeder fremde Client aus – auch die TcpConnection in Unity arbeitet so.
 
 Start (der Controller muss laufen):
     python client.py               interaktiv, "help" zeigt die Befehle
@@ -223,7 +223,7 @@ async def interactive(client: ControllerClient) -> None:
 
     input() blockiert – in der Event-Loop würde es alles anhalten. Deshalb läuft es in einem
     eigenen Thread, der jede Zeile über call_soon_threadsafe an die Loop übergibt.
-    Genau dieses Muster ("Thread übergibt an den Haupt-Thread") braucht Unity in M6.
+    Dasselbe Muster ("Thread übergibt an den Haupt-Thread") nutzt auch die TcpConnection in Unity.
     """
     loop = asyncio.get_running_loop()
     lines: asyncio.Queue[Optional[str]] = asyncio.Queue()

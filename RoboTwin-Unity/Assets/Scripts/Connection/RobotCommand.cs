@@ -10,7 +10,7 @@ namespace RoboTwin.Connection
         public int Id { get; internal set; }
     }
 
-    /// <summary>Alle Gelenke synchron zu den Zielwinkeln fahren. Später: "move_joints".</summary>
+    /// <summary>Alle Gelenke synchron zu den Zielwinkeln fahren. Protokoll: "move_joints".</summary>
     public sealed class MoveJointsCommand : RobotCommand
     {
         public readonly float[] Joints;   // Grad, URDF-Konvention
@@ -24,17 +24,17 @@ namespace RoboTwin.Connection
         }
     }
 
-    /// <summary>Sofort anhalten. Später: "stop".</summary>
+    /// <summary>Sofort anhalten. Protokoll: "stop".</summary>
     public sealed class StopCommand : RobotCommand
     {
     }
 
-    /// <summary>Not-Halt: sofort anhalten und alle Fahrbefehle sperren, bis quittiert wird. Später: "emergency_stop".</summary>
+    /// <summary>Not-Halt: sofort anhalten und alle Fahrbefehle sperren, bis quittiert wird. Protokoll: "emergency_stop".</summary>
     public sealed class EmergencyStopCommand : RobotCommand
     {
     }
 
-    /// <summary>Not-Halt quittieren. Später: "reset".</summary>
+    /// <summary>Not-Halt quittieren. Protokoll: "reset".</summary>
     public sealed class ResetCommand : RobotCommand
     {
     }

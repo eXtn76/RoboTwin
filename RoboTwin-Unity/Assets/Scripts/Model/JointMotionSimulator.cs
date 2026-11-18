@@ -73,7 +73,7 @@ namespace RoboTwin.Model
             Replan();
         }
 
-        /// <summary>Neue Ziele für alle Gelenke auf einmal (später: move_joints).</summary>
+        /// <summary>Neue Ziele für alle Gelenke auf einmal (entspricht "move_joints" im Protokoll).</summary>
         public void SetTargets(float[] angles)
         {
             // Falsche Anzahl ist ein Programmier- oder Protokollfehler – laut melden statt raten.

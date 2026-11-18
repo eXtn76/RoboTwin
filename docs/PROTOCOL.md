@@ -1,6 +1,6 @@
 # RoboTwin-Protokoll
 
-Version **1** (mit Erweiterung Not-Halt aus M7 – abwärtskompatibel: neue Befehle und Felder,
+Version **1** (inklusive Not-Halt-Erweiterung – abwärtskompatibel: neue Befehle und Felder,
 die ältere Clients ignorieren)
 
 Dieses Dokument beschreibt, wie ein Client (Unity, Test-Client) mit dem RoboTwin-Controller

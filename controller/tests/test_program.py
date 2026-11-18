@@ -35,7 +35,7 @@ class RepositoryProgramsTests(unittest.TestCase):
                 self.assertTrue(program.points)
 
     def test_demo_has_at_least_five_points(self):
-        # M7-Ziel: "Programm mit 5+ Punkten läuft über das Netzwerk"
+        # Anforderung: Demo-Programm mit mindestens 5 Punkten
         program = load_program(PROGRAMS / "demo_pick_and_place.json", LIMITS)
         self.assertGreaterEqual(len(program.points), 5)
 
